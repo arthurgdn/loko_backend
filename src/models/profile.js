@@ -3,32 +3,7 @@ const mongoose = require('mongoose')
 
 //create userSchema
 const profileSchema = new mongoose.Schema({
-    firstName: {
-        type : String,
-        required : true,
-        trim : true
-    },
-    lastName:{
-        type: String,
-        required: true,
-        trim : true
-    },
-    profilePicture : {
-        type: Buffer,
-        required : false
-    },
-    location : {
-        type: {
-            type: String, 
-            enum: ['Point'], 
-            required: false
-          },
-          coordinates: {
-            type: [Number],
-            required: false
-          }
-        
-    },
+    
     description : {
         type: String,
         required: false,

@@ -1,8 +1,13 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
-
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Offer = require('./offer')
+const OfferComment = require('./offerComment')
+const Message = require('./message')
+const Profile = require('./profile')
+const UserRecommendation = require('./userRecommendation')
+const GroupMembership = require('./groupMembership')
 
 //create userSchema
 const userSchema = new mongoose.Schema({
@@ -39,14 +44,13 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    validatedEmail : {
+    validatedEmail : { 
         type: Boolean,
         required: true
     },
     phoneNumber : {
         type:String,
         required : false,
-        unique: true,
         trim: true,
         validate(value){
             if(!validator.isMobilePhone(value)){
@@ -77,7 +81,7 @@ const userSchema = new mongoose.Schema({
     collaborators : [{
         collaborator : {
             type : mongoose.Schema.Types.ObjectId,
-            required : true,
+            required : false,
             ref:'User'
         } 
     }],
@@ -91,7 +95,7 @@ const userSchema = new mongoose.Schema({
     timestamps : true
 })
 
-
+//We define virtuals to link user with the different activities
 userSchema.virtual('profile',{
     ref:'Profile',
     localField : '_id',
@@ -121,7 +125,7 @@ userSchema.virtual('recommendationsPublished',{
     foreignField : 'publisher'
 })
 
-user.Schema.virtual('groupsJoined',{
+userSchema.virtual('groupsJoined',{
     ref:'GroupMembership',
     localField: '_id',
     foreignField : 'user'
@@ -170,6 +174,22 @@ userSchema.pre('save', async function (next) {
 
 userSchema.pre('remove',async function(next){
     //deals with what has to be done when a user deletes account (remove offers,publications ...)
+    const user = this
+    await Offer.deleteMany({owner:user._id})
+    await UserRecommendation.deleteMany({toUser : user._id})
+    await UserRecommendation.deleteMany({publisher : user._id})
+    await Profile.deleteMany({user:user._id})
+    await OfferComment.deleteMany({publisher : user._id})
+    await GroupMembership.deleteMany({user:user._id})
+    await Message.deleteMany({author : user._id})
+    for (collaborator of user.collaborators){
+        const correspondingCollaborator = await User.findById(collaborator.collaborator)
+        correspondingCollaborator.collaborators = correspondingCollaborator.collaborators.filter((otherCollaborator)=>{
+            console.log(String(otherCollaborator.collaborator),String(user._id) )
+            return String(otherCollaborator.collaborator)!== String(user._id)  
+        })
+        await correspondingCollaborator.save()
+    }    
     next()
 })
 

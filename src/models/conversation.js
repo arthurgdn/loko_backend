@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-
+const Message = require('./message')
 const conversationSchema = new mongoose.Schema({
     members : [{
         member : {
@@ -28,6 +28,12 @@ conversationSchema.virtual('messages',{
     ref:'Message',
     localField : '_id',
     foreignField : 'conversation'
+})
+
+conversationSchema.pre('remove', async function(next){
+    const conversation = this
+    await Message.deleteMany({conversation : conversation._id})
+    next()
 })
 const Conversation = mongoose.model('Conversation',conversationSchema)
 module.exports = Conversation

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const OfferComment = require('./offerComment')
 
 const offerSchema = new mongoose.Schema({
     owner : {
@@ -65,6 +66,9 @@ offerSchema.virtual('offerComments',{
 
 offerSchema.pre('remove',async function(next){
     //deals with what has to be done when an offer is deleted
+    const offer = this
+    await OfferComment.deleteMany({publication : offer._id})
+    
     next()
 })
 

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
-
+//deal with authentication on backend
 const auth = async (req,res,next)=>{
     try{
         
@@ -13,6 +13,7 @@ const auth = async (req,res,next)=>{
         if(!user){
             throw new Error('')
         }
+        //We send the token and the potential user in the request
         req.token = token
         req.user = user
         

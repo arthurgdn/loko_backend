@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const GroupMembership = require('./groupMembership')
 const groupSchema = new mongoose.Schema({
     offers : [{
         offer : {
@@ -52,6 +53,9 @@ groupeSchema.virtual('members',{
     localField : '_id',
     foreignField : 'group'
 })
-
+groupeSchema.pre('remove',async function(next){
+    await GroupMembership.deleteMany({group : this._id})
+    next()
+})
 const Group = mongoose.model('Group',groupSchema)
 module.exports = Group
