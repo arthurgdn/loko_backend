@@ -85,6 +85,13 @@ const userSchema = new mongoose.Schema({
             ref:'User'
         } 
     }],
+    collaborationDemands : [{
+        demand : {
+            type : mongoose.Schema.Types.ObjectId,
+            required : false,
+            ref : 'User'
+        }
+    }],
     tokens : [{
         token : {
             type : String,

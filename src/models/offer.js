@@ -33,8 +33,8 @@ const offerSchema = new mongoose.Schema({
         type: Number,
         required : false
     },
-    completed : {
-        type: Boolean,
+    completedStatus : {
+        type: String,
         required: true
     },
     scope : {       //Defines which user can see the offer (groups/projects for example)

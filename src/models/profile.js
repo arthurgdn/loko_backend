@@ -21,11 +21,19 @@ const profileSchema = new mongoose.Schema({
             trim: true
         }
     }],
+    completedOffers :[{
+        completedOffer : {
+            type : mongoose.Schema.Types.ObjectId,
+            required : false,
+            ref : 'Offer'
+        }
+    }],
     user : {
         type : mongoose.Schema.Types.ObjectId,
         required : true,
         ref : 'User'
-    }
+    },
+
 },{
     timestamps : true
 })

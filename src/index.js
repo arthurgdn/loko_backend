@@ -1,6 +1,7 @@
 const express = require('express')
 const userRouter = require('./routers/user')
 const profileRouter = require('./routers/profile')
+const offerRouter = require('./routers/offer')
 //runs database connection
 require('./db/mongoose')
 //use bodyParser to parse requests to use req.body property
@@ -15,6 +16,7 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json())
 app.use(userRouter)
 app.use(profileRouter)
+app.use(offerRouter)
 
 app.listen(port, () => {
     console.log('Server is up on port ' + port)

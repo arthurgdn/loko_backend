@@ -100,17 +100,32 @@ router.patch('/users/me/password',auth,async (req,res)=>{
     }
  
  })
-
- //API to add collaborator
- router.post('/users/collaborators',auth,async (req,res)=>{
+router.post('/users/sendcollabdemand',auth,async (req,res)=>{
+    try {
+        const isInCollaboratorsDemand = req.user.collaborationDemands.find((demand)=>String(demand.demand)===String(req.body._id))
+        const isAlreadyCollaborator = req.user.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.body._id))
+        const collaboratorExists = !!(await User.findOne({_id:req.body._id}))
+        if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id) && collaboratorExists && isInCollaboratorsDemand===undefined){
+            const collaborator = await User.findOne({_id:req.body._id})
+            collaborator.collaborationDemands.push({demand: req.user._id})
+            await collaborator.save()
+        }
+        }catch(e){
+        res.status(400).send()
+    }
+})
+ //API to accept a collaborator's demand
+ router.post('/users/acceptcollab/',auth,async (req,res)=>{
      try{
+         const isInCollaboratorsDemand = req.user.collaborationDemands.find((demand)=>String(demand.demand)===String(req.body._id))
          const isAlreadyCollaborator = req.user.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.body._id))
          const collaboratorExists = !!(await User.findOne({_id:req.body._id}))
          
          //We check if this user exists, is not already a collaborator and if it's not the user himself
-         if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id) && collaboratorExists){
+         if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id) && collaboratorExists && isInCollaboratorsDemand!==undefined){
             req.user.collaborators.push({collaborator : req.body._id})
-            
+            //we delete the collaborator's demand from the db
+            user.collaborationDemands = user.collaborationDemands.filter((demand)=>String(demand.demand) !==String(req.body._id))  
             await req.user.save()
             res.send()}
          else {
