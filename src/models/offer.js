@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const OfferComment = require('./offerComment')
+const CollaborationDemand = require('./collaborationDemand')
 
 const offerSchema = new mongoose.Schema({
     owner : {
@@ -55,13 +56,6 @@ const offerSchema = new mongoose.Schema({
             required: false,
             ref:'User'
         }
-    }],
-    pendingDemands : [{
-        demand : {
-            type : mongoose.Schema.Types.ObjectId,
-            required : false,
-            ref : 'User'
-        }
     }]
 },{timestamps:true})
 
@@ -70,12 +64,16 @@ offerSchema.virtual('offerComments',{
     localField : '_id',
     foreignField : 'publication'
 })
-
+offerSchema.virtual('collaborationDemands',{
+    ref : 'CollaborationDemand',
+    localField : '_id',
+    foreignField : 'offer'
+})
 offerSchema.pre('remove',async function(next){
     //deals with what has to be done when an offer is deleted
     const offer = this
     await OfferComment.deleteMany({publication : offer._id})
-    
+    await CollaborationDemand.deleteMany({offer : offer._id})
     next()
 })
 

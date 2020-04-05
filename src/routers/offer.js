@@ -112,51 +112,20 @@ router.delete('/offer/:id', auth, async (req,res)=>{
         res.status(400).send(e)
     }
 })
-
-
- //API to send a demand for collaboration
- router.post('/offer/sendcollabdemand/:id',auth,async (req,res)=>{
+//API for a user to get the offers he collaborates on 
+router.get('offer/collaborated/me',auth,async(req,res)=>{
+    
     try {
-        const offer = await Offer.findById(req.params.id)
-        if(!offer){
-            return res.status(404).send()
-        }
-        const isInCollaboratorsDemand = offer.pendingDemands.find((demand)=>String(demand.demand)===String(req.user._id))
-        const isAlreadyCollaborator = offer.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.user._id))
         
-        if(isAlreadyCollaborator===undefined && String(offer.owner) !==String(req.user._id)  && isInCollaboratorsDemand===undefined){
-            
-            offer.pendingDemands.push({demand: req.user._id})
-            await offer.save()
-        }
-        }catch(e){
-        res.status(400).send()
+        await req.user.populate({
+            path : 'collaboratedOffers'
+        }).execPopulate()
+
+        
+        res.send(req.user.collaboratedOffers)
+    }
+    catch(e){
+        res.status(500).send(e)
     }
 })
- //API to accept a collaborator's demand
- router.post('/offer/acceptcollab/id',auth,async (req,res)=>{
-     try{
-        const offer = await Offer.findById(req.params.id)
-        if(!offer){
-            return res.status(404).send()
-        }
-         const isInCollaboratorsDemand = offer.pendingDemands.find((demand)=>String(demand.demand)===String(req.body._id))
-         const isAlreadyCollaborator = offer.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.body._id))
-         const collaboratorExists = !!(await User.findOne({_id:req.body._id}))
-         
-         //We check if this user exists, is not already a collaborator and if it's not the publisher of the offer himself
-         if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(offer.owner) && collaboratorExists && isInCollaboratorsDemand!==undefined){
-            offer.collaborators.push({collaborator : req.body._id})
-            //we delete the collaborator's demand from the db
-            offer.pendingDemands = offer.pendingDemands.filter((demand)=>String(demand.demand) !==String(req.body._id))  
-            await offer.save()
-            res.send()}
-         else {
-             res.status(400).send('Cannot add this collaborator')
-         }
-     }catch(e){
-         res.status(400).send(e)
-     }
- })
- 
 module.exports = router
