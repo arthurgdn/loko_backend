@@ -100,15 +100,22 @@ router.patch('/users/me/password',auth,async (req,res)=>{
     }
  
  })
+
+ //API to send a demand for collaboration
 router.post('/users/sendcollabdemand',auth,async (req,res)=>{
     try {
-        const isInCollaboratorsDemand = req.user.collaborationDemands.find((demand)=>String(demand.demand)===String(req.body._id))
+        const searchedCollaborator = await User.findOne({_id:req.body._id})
+        if(!searchedCollaborator){
+            return res.status(404).send()
+        }
+        const isInCollaboratorsDemand = searchedCollaborator.collaborationDemands.find((demand)=>String(demand.demand)===String(req.user._id))
+        const isInMyDemand = req.user.collaborationDemands.find((demand)=>String(demand.demand)===String(req.body._id))
         const isAlreadyCollaborator = req.user.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.body._id))
-        const collaboratorExists = !!(await User.findOne({_id:req.body._id}))
-        if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id) && collaboratorExists && isInCollaboratorsDemand===undefined){
-            const collaborator = await User.findOne({_id:req.body._id})
-            collaborator.collaborationDemands.push({demand: req.user._id})
-            await collaborator.save()
+        
+        if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id)  && isInCollaboratorsDemand===undefined && isInMyDemand===undefined){
+           
+            searchedCollaborator.collaborationDemands.push({demand: req.user._id})
+            await searchedCollaborator.save()
         }
         }catch(e){
         res.status(400).send()

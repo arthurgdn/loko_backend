@@ -55,6 +55,13 @@ const offerSchema = new mongoose.Schema({
             required: false,
             ref:'User'
         }
+    }],
+    pendingDemands : [{
+        demand : {
+            type : mongoose.Schema.Types.ObjectId,
+            required : false,
+            ref : 'User'
+        }
     }]
 },{timestamps:true})
 
