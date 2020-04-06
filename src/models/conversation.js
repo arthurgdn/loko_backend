@@ -8,6 +8,13 @@ const conversationSchema = new mongoose.Schema({
             ref : 'User'
         }
     }],
+    admins : [{
+        admin : {
+            type : mongoose.Schema.Types.ObjectId,
+            required : false,
+            ref:'User'
+        }
+    }],
     name : {
         type : String,
         required : false,
