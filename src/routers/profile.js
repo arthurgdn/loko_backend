@@ -1,6 +1,7 @@
 const express = require('express')
 const auth = require('../middleware/auth')
 const Profile = require('../models/profile')
+const Offer = require('../models/offer')
 const User = require('../models/user')
 const router = new express.Router()
 router.patch('/profile',auth,async (req,res)=>{
@@ -29,12 +30,23 @@ router.patch('/profile',auth,async (req,res)=>{
 })
 router.get('/profile',auth,async (req,res)=>{
     try{
-        const profile = Profile.findOne({user: req.body._id})
-        if(!profile){
+        const profile = await  Profile.findOne({user: req.body._id})
+        
+        const {firstName,lastName,location,profilePicture} = await User.findById(req.body._id)
+        
+        if(!profile || !firstName || !lastName){
             return res.status(404).send()
         }
-        res.send(profile)
+        
+        res.send({
+            ...profile,
+            firstName,
+            lastName,
+            location,
+            profilePicture
+        })
     }catch(e){
+        
         res.status(400).send(e)
     }
 })
@@ -42,13 +54,13 @@ router.get('/profile',auth,async (req,res)=>{
 //API to add a completed offer to the profile
 router.post('/profile/completedOffer',auth,async (req,res)=>{
     try{
-        const profile = Profile.findOne({user: req.user._id})
-        const isAlreadyCompletedOffer = profile.completedOffers.find((completedOffer)=>String(completedOffer.completedOffer) ===String(req.body._id))
+        const profile = await  Profile.findOne({user: req.user._id})
+        const isAlreadyCompletedOffer =  profile.completedOffers.find((completedOffer)=>String(completedOffer.completedOffer) ===String(req.body._id))
         const offer = await Offer.findOne({_id:req.body._id})
 
         
         //We check if this user exists, is not already a collaborator and if it's not the user himself
-        if(isAlreadyCompletedOffer===undefined  && !!offer && offer.completedStatus ==='completed' ){
+        if(isAlreadyCompletedOffer===undefined  && !!profile && !!offer && offer.completedStatus ==='completed' ){
            profile.completedOffers.push({completedOffer : req.body._id})
            
            await profile.save()
@@ -59,5 +71,6 @@ router.post('/profile/completedOffer',auth,async (req,res)=>{
     }catch(e){
         res.status(400).send(e)
     }
+    
 })
 module.exports = router

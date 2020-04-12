@@ -2,7 +2,7 @@ const express = require('express')
 const auth = require('../middleware/auth')
 const User = require('../models/user')
 const Profile = require('../models/profile')
-const UserRecommendation = require('../models/offerComment')
+const UserRecommendation = require('../models/userRecommendation')
 const router = new express.Router()
 
 // the :id always refers to the offer's id
@@ -11,8 +11,12 @@ router.post('/profile/:id/recommendation',auth, async(req, res) => {
     
     try {
         const profile = await Profile.findById(req.params.id)
+        
         if(!profile){
             return res.status(404).send()
+        }
+        if(String(profile.user)===String(req.user._id)){
+            return res.status(400).send('Vous ne pouvez pas écrire de recommendation à vous même ')
         }
             const recommendation = new UserRecommendation({
         ...req.body,
@@ -68,7 +72,9 @@ router.patch('/profile/:profile_id/recommendations/:id',auth, async (req,res)=>{
         if(!recommendation){
             return res.status(404).send()
         }
+        
         updates.forEach((update)=>{
+            console.log(req.body[update])
             recommendation[update] = req.body[update]
         })
         

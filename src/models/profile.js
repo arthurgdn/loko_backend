@@ -14,13 +14,10 @@ const profileSchema = new mongoose.Schema({
         required:false,
         trim : true
     },
-    skills : [{
-        skill : {
-            type: String,
-            required : false,
-            trim: true
-        }
-    }],
+    skills : {
+        type : Array,
+        required : false
+    },
     completedOffers :[{
         completedOffer : {
             type : mongoose.Schema.Types.ObjectId,

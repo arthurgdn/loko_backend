@@ -117,7 +117,7 @@ userSchema.virtual('offers',{
 userSchema.virtual('collaboratedOffers',{
     ref : 'Offer',
     localField: '_id',
-    foreignField : 'collaborator'
+    foreignField : 'collaborators.collaborator'
 })
 userSchema.virtual('conversations',{
     ref:'Conversation',

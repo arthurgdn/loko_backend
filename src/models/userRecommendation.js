@@ -22,5 +22,5 @@ const userRecommendationSchema = new mongoose.Schema({
     }
 },{timestamps:true})
 
-const UserRecommendation = mongoose.model('UserRecommandation',userRecommendationSchema)
+const UserRecommendation = mongoose.model('UserRecommendation',userRecommendationSchema)
 module.exports = UserRecommendation

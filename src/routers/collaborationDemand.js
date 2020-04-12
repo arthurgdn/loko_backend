@@ -5,7 +5,7 @@ const User = require('../models/user')
 const auth = require('../middleware/auth')
 const CollaborationDemand = require('../models/collaborationDemand')
 const router = new express.Router()
-router.get('offer/:id/demands',auth,async (req,res)=>{
+router.get('/offer/:id/demands',auth,async (req,res)=>{
     try{
         const offer = await Offer.findById(req.params.id)
         if(!offer){
@@ -20,15 +20,17 @@ router.get('offer/:id/demands',auth,async (req,res)=>{
     }
 })
 
-router.post('offer/:id/demand',auth,async (req,res)=>{
-    try {
+router.post('/offer/:id/demand',auth,async (req,res)=>{
+    //try {
     const offer = await Offer.findById(req.params.id)
+    
         if(!offer){
             return res.status(404).send()
         }
     const inCollaborators = offer.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.user._id))
-    const existingDemand = await CollaborationDemand.find({offer:offer._id,from:req.user._id})
-    if(!!existingDemand){
+    const existingDemand = await CollaborationDemand.find({offer:req.params.id,from:req.user._id})
+    
+    if(!!existingDemand && existingDemand.length !==0){
         return res.status(400).send('A collaboration request has already been sent')
     }
     if(!!inCollaborators){
@@ -41,12 +43,10 @@ router.post('offer/:id/demand',auth,async (req,res)=>{
     })
     await demand.save()
     res.status(201).send(demand)
-    }catch(e){
-        res.status(400).send(e)
-    }
+    
 })
 
-router.delete('offer/:id/demand',auth,async(req,res)=>{
+router.delete('/offer/:id/demand',auth,async(req,res)=>{
     try{
         const demand = await CollaborationDemand.findOneAndDelete({from:req.body._id,offer:req.params.id})
         if(!demand){

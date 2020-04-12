@@ -116,9 +116,13 @@ router.post('/users/sendcollabdemand',auth,async (req,res)=>{
            
             searchedCollaborator.collaborationDemands.push({demand: req.user._id})
             await searchedCollaborator.save()
+            res.send(searchedCollaborator)
+        }
+        else{
+            res.status(400).send()
         }
         }catch(e){
-        res.status(400).send()
+        res.status(400).send(e)
     }
 })
  //API to accept a collaborator's demand
@@ -131,8 +135,13 @@ router.post('/users/sendcollabdemand',auth,async (req,res)=>{
          //We check if this user exists, is not already a collaborator and if it's not the user himself
          if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id) && collaboratorExists && isInCollaboratorsDemand!==undefined){
             req.user.collaborators.push({collaborator : req.body._id})
+            const collaborator = await User.findById(req.body._id)
+            if(!collaborator){
+                res.status(404).send()
+            }
+            collaborator.collaborators.push({collaborator : req.user._id})
             //we delete the collaborator's demand from the db
-            user.collaborationDemands = user.collaborationDemands.filter((demand)=>String(demand.demand) !==String(req.body._id))  
+            req.user.collaborationDemands = req.user.collaborationDemands.filter((demand)=>String(demand.demand) !==String(req.body._id))  
             await req.user.save()
             res.send()}
          else {

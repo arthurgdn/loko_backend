@@ -16,6 +16,7 @@ router.post('/offer/create',auth, async (req,res)=>{
         completedStatus : 'created'
     })
     offer.keywords = []
+    offer.collaborators.push({collaborator : req.user._id})
     try{
     //Deal with keywords
     if(req.body.keywords.length>0){
@@ -68,7 +69,7 @@ router.patch('/offer/:id',auth, async (req,res)=>{
         if(!offer){
             return res.status(404).send()
         }
-        updates.forEach((update)=>{
+        updates.forEach( async (update)=>{
             //We do the same thing when we encounter a new keyword
             if(update==='keywords'){
                 offer.keywords = []
@@ -113,7 +114,7 @@ router.delete('/offer/:id', auth, async (req,res)=>{
     }
 })
 //API for a user to get the offers he collaborates on 
-router.get('offer/collaborated/me',auth,async(req,res)=>{
+router.get('/offer/collaborated/me',auth,async(req,res)=>{
     
     try {
         

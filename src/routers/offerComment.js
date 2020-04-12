@@ -1,6 +1,6 @@
 const express = require('express')
 const auth = require('../middleware/auth')
-const Offer = require('../models/profile')
+const Offer = require('../models/offer')
 const OfferComment = require('../models/offerComment')
 const router = new express.Router()
 
@@ -26,6 +26,7 @@ router.get('/offer/:id/comments',auth,async (req,res)=>{
    
     try {
         const offer = await Offer.findById(req.params.id)
+        console.log(offer)
         if(!offer){
             return res.status(404).send()
         }
@@ -75,7 +76,7 @@ router.patch('/offer/:offer_id/comments/:id',auth, async (req,res)=>{
 router.delete('/offer/:offer_id/comments/:id', auth, async (req,res)=>{
 
     try {
-        const offerComment = await OfferComment.findOneAndDelete({_id : req.params.id,publication : req.params.offer_id})
+        const offerComment = await OfferComment.findOneAndDelete({_id : req.params.id,publication : req.params.offer_id,publisher : req.user._id})
         if(!offerComment){
             return res.status(404).send()
         }
