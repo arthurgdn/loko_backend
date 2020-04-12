@@ -8,7 +8,7 @@ const GroupMembership = require('../models/groupMembership')
 const Profile = require('../models/profile')
 const User = require('../models/user')
 const Offer = require('../models/offer')
-const findCollaboratorByName = require('../controllers/users/findCollaboratorByName')
+const findCollaboratorByName = require('../tools/users/findCollaboratorByName')
 
 const UserRecommendation = require('../models/userRecommendation')
 
