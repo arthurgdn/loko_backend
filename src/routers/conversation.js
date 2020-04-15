@@ -14,7 +14,7 @@ router.get('/conversation/:id',auth,async (req,res)=>{
             return res.status(404).send()
         }
         //We check if the user is a member of this conversation
-        if(conversation.members.find((member)=>String(member.member)===String(req.user._id))===null){
+        if(!conversation.members.find((member)=>String(member.member)===String(req.user._id))){
             return res.status(400).send('User is not a member of this conversation')
         }
         res.send(conversation)
@@ -41,7 +41,7 @@ router.patch('/conversation/:id',auth,async(req,res)=>{
         if(!conversation){
             return res.status(404).send()
         }
-        if(conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))===null){
+        if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))){
             return res.status(400).send('User has to be admin to do this')
         }
         updates.forEach((update)=>{
@@ -56,12 +56,13 @@ router.patch('/conversation/:id',auth,async(req,res)=>{
     }
 })
 //API to create a conversation
-router.post('conversation',auth,async(req,res)=>{
+router.post('/conversation',auth,async(req,res)=>{
     const conversation = new Conversation({
         ...req.body,
         admins : [{admin : req.user._id}],
     })
     try {
+        conversation.members.push({member : req.user._id})
         await conversation.save()
         res.status(201).send(conversation)
     }catch(e){
@@ -75,7 +76,7 @@ router.delete('/conversation/:id',auth,async(req,res)=>{
         if(!conversation){
             return res.status(404).send()
         }
-        if(conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))===null){
+        if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))){
             return res.status(400).send('User has to be admin to do this')
         }
         const deletedConversation = await Conversation.findByIdAndDelete(req.params.id)
@@ -94,14 +95,14 @@ router.post('/conversation/:id/admin',auth,async(req,res)=>{
         if(!user || !conversation){
             return res.status(404).send()
         }
-        if(conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))===null){
+        if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))){
             return res.status(400).send('User has to be admin to do this')
         }
 
         if(req.body.newStatus==='admin'){
-            if(conversation.admins.find((admin)=>String(admin.admin)===String(req.body._id))!==null){
+            if(!!conversation.admins.find((admin)=>String(admin.admin)===String(req.body._id))){
                 return res.status(400).send('User is already admin')
-            }else if(conversation.members.find((member)=>String(member.member)===String(req.body._id))===null){
+            }else if(!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
                 return res.status(400).send('User is not a member of this conversation')
             }
             conversation.admins.push({admin:req.body._id})
@@ -109,9 +110,9 @@ router.post('/conversation/:id/admin',auth,async(req,res)=>{
             res.send(conversation)
 
         }else if (req.body.newStatus==='unadmin'){
-            if(conversation.admins.find((admin)=>String(admin.admin)===String(req.body._id))===null){
+            if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.body._id))){
                 return res.status(400).send('User is not an admin')
-            }else if(conversation.members.find((member)=>String(member.member)===String(req.body._id))===null){
+            }else if(!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
                 return res.status(400).send('User is not a member of this conversation')
             }
 
@@ -133,12 +134,15 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
         if(!user || !conversation){
             return res.status(404).send()
         }
-        if(conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))===null){
+        if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))){
             return res.status(400).send('User has to be admin to do this')
+        }
+        if(String(req.user._id)===String(req.body._id)){
+            return res.status(400).send('You cannot edit your own status')
         }
 
         if(req.body.action==='add'){
-            if(conversation.members.find((member)=>String(member.member)===String(req.body._id))!==null){
+            if(!!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
                 return res.status(400).send('User is already a member')
             }
             conversation.members.push({member:req.body._id})
@@ -146,10 +150,12 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
             res.send(conversation)
 
         }else if (req.body.action==='remove'){
-            if(conversation.members.find((member)=>String(member.member)===String(req.body._id))===null){
+            if(!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
                 return res.status(400).send('User is not a member')
             }
-
+            if(conversation.members.length===2){
+                res.send(await Conversation.findByIdAndDelete(req.params.id))
+            }
             conversation.members = conversation.members.filter((members)=>String(member.member)!==String(req.body._id))
             await conversation.save()
             res.send(conversation)
