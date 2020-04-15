@@ -1,6 +1,6 @@
 const express = require('express')
 const Conversation = require('../models/conversation')
-const {generateLocationMessage,generateMessage} = require('../controllers/utils/messages')
+const {generateLocationMessage,generateMessage} = require('../tools/utils/messages')
 const auth = require('../middleware/auth')
 
 const router = new express.Router()
