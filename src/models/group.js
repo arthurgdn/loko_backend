@@ -1,13 +1,12 @@
 const mongoose = require('mongoose')
 const GroupMembership = require('./groupMembership')
 const groupSchema = new mongoose.Schema({
-    offers : [{
-        offer : {
-            type: mongoose.Schema.Types.ObjectId,
-            required : false,
-            ref : 'Offer'
-        }
-    }],
+    
+    name : {
+        type : String,
+        trim : true,
+        required: true
+    },
     description : {
         type: String,
         trim : true,
@@ -16,7 +15,7 @@ const groupSchema = new mongoose.Schema({
     securityStatus : {
         type: String,
         trim : true,
-        required : false
+        required : true
     },
     image : {
         type :Buffer,
@@ -48,12 +47,17 @@ const groupSchema = new mongoose.Schema({
     
 },{timestamps:true})
 
-groupeSchema.virtual('members',{
+groupSchema.virtual('members',{
     ref:'GroupMembership',
     localField : '_id',
     foreignField : 'group'
 })
-groupeSchema.pre('remove',async function(next){
+groupSchema.virtual('offers',{
+    ref:'Offer',
+    localField : '_id',
+    foreignField : 'groups.group'
+})
+groupSchema.pre('remove',async function(next){
     await GroupMembership.deleteMany({group : this._id})
     next()
 })

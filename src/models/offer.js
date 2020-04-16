@@ -43,6 +43,15 @@ const offerSchema = new mongoose.Schema({
         required : true,
         trim : true
     },
+    groups : [
+        {
+            group : {
+                type : mongoose.Schema.Types.ObjectId,
+                required : false,
+                ref : 'Group'
+            }
+        }
+    ],
     keywords : [{
         keyword : {
             type :mongoose.Schema.Types.ObjectId,

@@ -4,7 +4,8 @@ const Offer = require('../models/offer')
 const User = require('../models/user')
 const Keyword = require('../models/keyword')
 const auth = require('../middleware/auth')
-
+const Group = require('../models/group')
+const GroupMembership = require('../models/groupMembership')
 
 const router = new express.Router()
 
@@ -32,6 +33,18 @@ router.post('/offer/create',auth, async (req,res)=>{
             }
         }
     }
+    if(offer.scope==='general' && !!offer.groups){
+        return res.status(400).send({error:'Cannot add groups when scope is general'})
+    }
+    //We check if the user is a member of the groups he publishes in 
+    if(offer.scope==='group'){
+        for(group of offer.groups){
+        const member = await GroupMembership.findOne({group:group.group._id,user:req.user._id})
+        if(!member){
+            return res.status(400).send({error:'You are not a member of this group'})
+        }
+    }
+}
         await offer.save()
         res.status(201).send(offer)
     }catch(e){
@@ -59,7 +72,7 @@ router.get('/offer/:id',auth,async (req,res)=>{
 //API to edit an offer
 router.patch('/offer/:id',auth, async (req,res)=>{
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['title','description','location','locationRadius','completedStatus','scope','keywords']
+    const allowedUpdates = ['title','description','location','locationRadius','completedStatus','keywords']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
         return res.status(400).send({error : 'Invalid updates'})
@@ -69,7 +82,7 @@ router.patch('/offer/:id',auth, async (req,res)=>{
         if(!offer){
             return res.status(404).send()
         }
-        updates.forEach( async (update)=>{
+          for(update of updates){
             //We do the same thing when we encounter a new keyword
             if(update==='keywords'){
                 offer.keywords = []
@@ -78,18 +91,22 @@ router.patch('/offer/:id',auth, async (req,res)=>{
                     if(!existingKeyword){
                         const newKeyword = new Keyword({name:keyword})
                         offer.keywords.push({keyword:newKeyword._id})
+                        
                         await newKeyword.save()
+                        
                     }else{
                          
                         offer.keywords.push({keyword:existingKeyword._id})
+                        
                     }
                 }
             }else{
             offer[update] = req.body[update]
             }
-        })
+        }
         
         await offer.save()
+        
         res.send(offer)
     }
 
@@ -127,6 +144,24 @@ router.get('/offer/collaborated/me',auth,async(req,res)=>{
     }
     catch(e){
         res.status(500).send(e)
+    }
+})
+//Get all offers in a group
+router.get('/offers/group/:id',auth,async(req,res)=>{
+    try{
+        const group = await Group.findById(req.params.id)
+        if(!group){
+            return res.status(404).send()
+        }
+        const membership = await GroupMembership.findOne({group:group._id,user:req.user._id})
+        if(!membership && (group.status ==='onRequest' || group.status==='private')){
+            return res.status(400).send({error: 'You do not have access to this'})
+        }
+        await group.populate({path:'offers'}).execPopulate()
+        res.send(group.offers)
+
+    }catch(e){
+        res.status(400).send(e)
     }
 })
 module.exports = router
