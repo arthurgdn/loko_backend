@@ -11,6 +11,9 @@ router.get('/offer/:id/demands',auth,async (req,res)=>{
         if(!offer){
             return res.status(404).send()
         }
+        if(String(offer.owner)!==String(req.user._id)){
+            return res.status(400).send({error:'You have to be the creator of the offer to view this'})
+        }
         await offer.populate({
             path : 'collaborationDemands'
         }).execPopulate()
@@ -48,15 +51,21 @@ router.post('/offer/:id/demand',auth,async (req,res)=>{
 
 router.delete('/offer/:id/demand',auth,async(req,res)=>{
     try{
+        const offer = await Offer.findById(req.params.id)
+            if (!offer){
+                return res.status(404).send()
+            }
+        
+        if(String(offer.owner)!==String(req.user._id)){
+            return res.status(400).send({error:'You have to be the creator of the offer to view this'})
+        }
         const demand = await CollaborationDemand.findOneAndDelete({from:req.body._id,offer:req.params.id})
         if(!demand){
             return res.status(404).send()
         }
+
         if(req.body.status ==='accepted'){
-            const offer = await Offer.findById(req.params.id)
-            if (!offer){
-                return res.status(404).send()
-            }
+            
             offer.collaborators.push({collaborator:req.body._id})
             await offer.save()
             res.send(demand)

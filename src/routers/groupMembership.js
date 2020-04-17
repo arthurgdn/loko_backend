@@ -42,6 +42,7 @@ router.get('/group/:id/members',auth, async(req,res)=>{
 router.post('/group/:id/member',auth,async(req,res)=>{
     try{
         const group = await Group.findById(req.params.id)
+        
         if(!group){
             return res.status(404).send()
         }

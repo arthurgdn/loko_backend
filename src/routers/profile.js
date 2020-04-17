@@ -21,7 +21,6 @@ router.patch('/profile',auth,async (req,res)=>{
             profile[update] = req.body[update]
         })
         await profile.save()
-        //const user = await User.findByIdAndUpdate(_id,req.body,{new : true,runValidators:true})
         res.send(profile)
     }
     catch(e){
@@ -58,15 +57,13 @@ router.post('/profile/completedOffer',auth,async (req,res)=>{
         const isAlreadyCompletedOffer =  profile.completedOffers.find((completedOffer)=>String(completedOffer.completedOffer) ===String(req.body._id))
         const offer = await Offer.findOne({_id:req.body._id})
 
-        
-        //We check if this user exists, is not already a collaborator and if it's not the user himself
         if(isAlreadyCompletedOffer===undefined  && !!profile && !!offer && offer.completedStatus ==='completed' ){
            profile.completedOffers.push({completedOffer : req.body._id})
            
            await profile.save()
            res.send()}
         else {
-            res.status(400).send('Cannot add this completed offer')
+            res.status(400).send({error:'Cannot add this completed offer'})
         }
     }catch(e){
         res.status(400).send(e)

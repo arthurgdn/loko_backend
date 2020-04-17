@@ -3,7 +3,7 @@ const auth = require('../middleware/auth')
 const Group = require('../models/group')
 const GroupMembership = require('../models/groupMembership')
 const Keyword = require('../models/keyword')
-const Offer = require('../models/offer')
+
 
 const router = new express.Router()
 //API to create a new group the request should have the following body:
@@ -39,17 +39,14 @@ router.post('/group',auth,async (req,res)=>{
     }
 })
 
-//API to get a group's info
+//API to get a group's info (you do not have to be a member for this)
 router.get('/group/:id',auth,async(req,res)=>{
     try{
         const group = await Group.findById(req.params.id)
         if(!group){
             return res.status(404).send()
         }
-        const member = await GroupMembership.findOne({group: req.params.id,user:req.user._id})
-        if(!member){
-            return res.status(400).send({error:'User is not a member of the group'})
-        }
+        
         res.send(group)
     }catch(e){
         res.status(500).send(e)

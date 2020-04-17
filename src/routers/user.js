@@ -3,14 +3,12 @@ const multer = require('multer')
 const path = require('path')
 const sharp = require('sharp')
 const auth = require('../middleware/auth')
-const Conversation = require('../models/conversation')
-const GroupMembership = require('../models/groupMembership')
+
 const Profile = require('../models/profile')
 const User = require('../models/user')
-const Offer = require('../models/offer')
+
 const findCollaboratorByName = require('../tools/users/findCollaboratorByName')
 
-const UserRecommendation = require('../models/userRecommendation')
 
 const router = new express.Router()
 
@@ -20,7 +18,7 @@ router.post('/users', async (req, res) => {
     const user = new User({...req.body,validatedEmail : false})
     const profile = new Profile({
         user : user._id
-    })
+    }) 
     try{
         const anonymousPath = path.join(__dirname,'../../avatars/anonymous.png')
     
@@ -36,7 +34,7 @@ router.post('/users', async (req, res) => {
         res.status(201).send({user,token})
     }
     catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
     
@@ -47,7 +45,6 @@ router.get('/users/me',auth,async (req,res)=>{
 })
 
 //API to login
-
 router.post('/users/login',async (req,res)=>{
     try{
         const user = await User.findByCredentials(req.body.email,req.body.password)
@@ -156,7 +153,7 @@ router.post('/users/sendcollabdemand',auth,async (req,res)=>{
  router.get('/users/collaborators/name',auth,async(req,res)=>{
     const matchingCollaborators = await findCollaboratorByName(req.body.searchString,req.user)
     console.log(matchingCollaborators)
-    res.send(matchingCollaborators)
+    res.send(matchingCollaborators) 
  })
 
  //API to add phone number

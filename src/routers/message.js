@@ -57,7 +57,17 @@ const generateLiveMessage = (io) =>{
         socket.on('messageSent',async ({conv_id,message},callback)=>{
             
             const user = socket.request.user
-            
+            try {
+                const conversation = await Conversation.findById(conv_id)
+                if(!conversation){
+                    callback('No corresponding conversation')
+                }
+                if(conversation.members.find((member)=>String(member.member)===String(user._id))===null){
+                    callback('You are not a member of this conversation')
+                }
+            }catch(e){
+                callback(e)
+            }
             io.to(conv_id).emit('messageUpdated',generateMessage(user.firstName + ' '+user.lastName,message))
             //we add the message to the db
             try {

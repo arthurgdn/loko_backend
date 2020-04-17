@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+
 const express = require('express')
 const Offer = require('../models/offer')
 const User = require('../models/user')
@@ -54,13 +54,27 @@ router.post('/offer/create',auth, async (req,res)=>{
 //API to get an offer 
 router.get('/offer/:id',auth,async (req,res)=>{
     const _id = req.params.id
-
+    
     try {
         //const task = await Task.findById(_id)
         const offer = await Offer.findOne({_id})
         if (!offer){
             return res.status(404).send()
         }
+        //We check if the user is a member of at least one of the groups
+        if(offer.scope==='group'){
+            let isMember= false
+            for(group of offer.groups){
+                const member = await GroupMembership.findOne({group:group.group._id,user:req.user._id})
+                if(!!member){
+                    isMember = true
+                }
+            }
+                if(!isMember){
+                    return res.status(400).send({error:'You are not a member of the groups in which the offer is published'})
+            }
+        
+    }
         res.send(offer)
     }
     catch(e){
@@ -81,6 +95,9 @@ router.patch('/offer/:id',auth, async (req,res)=>{
         const offer = await Offer.findOne({_id : req.params.id})
         if(!offer){
             return res.status(404).send()
+        }
+        if(String(offer.owner)!==String(req.user._id)){
+            return res.status(400).send({error:'You have to be the publisher of the offer'})
         }
           for(update of updates){
             //We do the same thing when we encounter a new keyword
@@ -119,12 +136,17 @@ router.patch('/offer/:id',auth, async (req,res)=>{
 router.delete('/offer/:id', auth, async (req,res)=>{
 
     try {
-        const offer = await Offer.findOneAndDelete({_id : req.params.id})
+        const offer = await Offer.findbyId(req.params.id)
+
         
         if(!offer){
             return res.status(404).send()
         }
-        res.send(offer)
+        if(String(offer.owner)!==String(req.user._id)){
+            return res.status(400).send({error:'You have to be the publisher of the offer'})
+        }
+        const deletedOffer = await Offer.findByIdAndDelete(req.params.id)
+        res.send(deletedOffer)
     }
     catch(e){
         res.status(400).send(e)

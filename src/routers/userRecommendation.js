@@ -16,7 +16,7 @@ router.post('/profile/:id/recommendation',auth, async(req, res) => {
             return res.status(404).send()
         }
         if(String(profile.user)===String(req.user._id)){
-            return res.status(400).send('Vous ne pouvez pas écrire de recommendation à vous même ')
+            return res.status(400).send({error:'Vous ne pouvez pas écrire de recommendation à vous même '})
         }
             const recommendation = new UserRecommendation({
         ...req.body,
@@ -68,7 +68,7 @@ router.patch('/profile/:profile_id/recommendations/:id',auth, async (req,res)=>{
     }
     
     try{
-        const recommendation = await UserRecommendation.findOne({_id : req.params.id, toUser : req.params.profile_id})
+        const recommendation = await UserRecommendation.findOne({_id : req.params.id, toUser : req.params.profile_id,publisher:req.user._id})
         if(!recommendation){
             return res.status(404).send()
         }
@@ -89,7 +89,7 @@ router.patch('/profile/:profile_id/recommendations/:id',auth, async (req,res)=>{
 router.delete('/profile/:profile_id/recommendation/:id', auth, async (req,res)=>{
 
     try {
-        const recommendation = await UserRecommendation.findOneAndDelete({_id : req.params.id,toUser : req.params.profile_id})
+        const recommendation = await UserRecommendation.findOneAndDelete({_id : req.params.id,toUser : req.params.profile_id,publisher:req.user._id})
         if(!recommendation){
             return res.status(404).send()
         }
