@@ -17,7 +17,12 @@ router.get('/messages/conversation/:id',auth,async(req,res)=>{
             return res.status(400).send('You are not a member of this conversation')
         }
         await conversation.populate({
-            path:'messages'
+            path:'messages',
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort:{createdAt: -1}
+            }
         }).execPopulate()
         res.send(conversation.messages)
     }catch(e){

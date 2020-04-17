@@ -42,7 +42,12 @@ router.get('/profile/:id/recommendations',auth,async (req,res)=>{
             return res.status(404).send()
         }
         await profile.populate({
-            path : 'recommendationsReceived'
+            path : 'recommendationsReceived',
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort:{createdAt: -1}
+            }
         }).execPopulate()
 
         

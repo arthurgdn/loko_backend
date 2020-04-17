@@ -63,7 +63,12 @@ router.get('/offer/:id/comments',auth,async (req,res)=>{
     }
 
         await offer.populate({
-            path : 'offerComments'
+            path : 'offerComments',
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort:{createdAt: -1}
+            }
         }).execPopulate()
 
         

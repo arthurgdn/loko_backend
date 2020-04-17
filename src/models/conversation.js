@@ -20,6 +20,11 @@ const conversationSchema = new mongoose.Schema({
         required : false,
         trim : true
     },
+    slicedName: {
+        type : String,
+        required : false,
+        trim : true
+    },
     description : {
         type: String,
         required : false,
@@ -36,6 +41,8 @@ conversationSchema.virtual('messages',{
     localField : '_id',
     foreignField : 'conversation'
 })
+
+
 
 conversationSchema.pre('remove', async function(next){
     const conversation = this

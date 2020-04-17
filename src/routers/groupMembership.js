@@ -31,7 +31,10 @@ router.get('/group/:id/members',auth, async(req,res)=>{
             match.status = status
         }
         //We populate only accepted members and admins of the group
-        await group.populate({path:'members',match}).execPopulate()
+        await group.populate({path:'members',match,options : {
+            limit : parseInt(req.query.limit),
+            skip : parseInt(req.query.skip)
+        }}).execPopulate()
         res.send(group.members)
     }catch(e){
         res.status(400).send(e)

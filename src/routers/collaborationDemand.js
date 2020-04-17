@@ -15,7 +15,12 @@ router.get('/offer/:id/demands',auth,async (req,res)=>{
             return res.status(400).send({error:'You have to be the creator of the offer to view this'})
         }
         await offer.populate({
-            path : 'collaborationDemands'
+            path : 'collaborationDemands',
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort:{createdAt: -1}
+            }
         }).execPopulate()
         res.send(offer.collaborationDemands)
     }catch(e){

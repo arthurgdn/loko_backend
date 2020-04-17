@@ -154,11 +154,20 @@ router.delete('/offer/:id', auth, async (req,res)=>{
 })
 //API for a user to get the offers he collaborates on 
 router.get('/offer/collaborated/me',auth,async(req,res)=>{
-    
+    match = {}
+    if (req.query.status){
+        match.completedStatus = req.query.status
+    }
     try {
         
         await req.user.populate({
-            path : 'collaboratedOffers'
+            path : 'collaboratedOffers',
+            match,
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort:{createdAt: -1}
+            }
         }).execPopulate()
 
         
@@ -179,7 +188,13 @@ router.get('/offers/group/:id',auth,async(req,res)=>{
         if(!membership && (group.status ==='onRequest' || group.status==='private')){
             return res.status(400).send({error: 'You do not have access to this'})
         }
-        await group.populate({path:'offers'}).execPopulate()
+        await group.populate({path:'offers',
+        options : {
+            limit : parseInt(req.query.limit),
+            skip : parseInt(req.query.skip),
+            sort:{createdAt: -1}
+        }
+    }).execPopulate()
         res.send(group.offers)
 
     }catch(e){

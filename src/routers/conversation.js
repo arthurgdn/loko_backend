@@ -170,8 +170,14 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
 //API for a user to fetch all his conversations
 router.get('/conversations/me',auth,async(req,res)=>{
     try{
+        
         await req.user.populate({
-            path : 'conversations'
+            path : 'conversations',
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort:{createdAt: -1}
+            }
         }).execPopulate()
         res.send(req.user.conversations)
     }catch(e){
