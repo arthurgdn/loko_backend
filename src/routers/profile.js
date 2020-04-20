@@ -3,10 +3,11 @@ const auth = require('../middleware/auth')
 const Profile = require('../models/profile')
 const Offer = require('../models/offer')
 const User = require('../models/user')
+const Keyword = require('../models/keyword')
 const router = new express.Router()
 router.patch('/profile',auth,async (req,res)=>{
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['description','summary','skills']
+    const allowedUpdates = ['description','summary','skills','keywords']
     
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
@@ -17,9 +18,28 @@ router.patch('/profile',auth,async (req,res)=>{
         if(!profile){
             return res.status(404).send()
         }
-        updates.forEach((update)=>{
+        for(update of updates){
+            //We do the same thing when we encounter a new keyword
+            if(update==='keywords'){
+                profile.keywords = []
+                for(keyword of req.body.keywords){
+                    const existingKeyword = await Keyword.findOne({name:keyword})
+                    if(!existingKeyword){
+                        const newKeyword = new Keyword({name:keyword})
+                        profile.keywords.push({keyword:newKeyword._id})
+                        
+                        await newKeyword.save()
+                        
+                    }else{
+                         
+                        profile.keywords.push({keyword:existingKeyword._id})
+                        
+                    }
+                }
+            }else{
             profile[update] = req.body[update]
-        })
+            }
+        }
         await profile.save()
         res.send(profile)
     }

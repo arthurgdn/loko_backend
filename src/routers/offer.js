@@ -33,13 +33,13 @@ router.post('/offer/create',auth, async (req,res)=>{
             }
         }
     }
-    if(offer.scope==='general' && !!offer.groups){
+    if(offer.scope==='general' && !!offer.groups&& offer.groups.length>0){
         return res.status(400).send({error:'Cannot add groups when scope is general'})
     }
     //We check if the user is a member of the groups he publishes in 
     if(offer.scope==='group'){
         for(group of offer.groups){
-        const member = await GroupMembership.findOne({group:group.group._id,user:req.user._id})
+        const member = await GroupMembership.findOne({group:group.group,user:req.user._id})
         if(!member){
             return res.status(400).send({error:'You are not a member of this group'})
         }
@@ -65,7 +65,7 @@ router.get('/offer/:id',auth,async (req,res)=>{
         if(offer.scope==='group'){
             let isMember= false
             for(group of offer.groups){
-                const member = await GroupMembership.findOne({group:group.group._id,user:req.user._id})
+                const member = await GroupMembership.findOne({group:group.group,user:req.user._id})
                 if(!!member){
                     isMember = true
                 }

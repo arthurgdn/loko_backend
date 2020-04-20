@@ -18,6 +18,13 @@ const profileSchema = new mongoose.Schema({
         type : Array,
         required : false
     },
+    keywords : [{
+        keyword : {
+            type :mongoose.Schema.Types.ObjectId,
+            required : false,
+            ref : 'Keyword'
+        }
+    }],
     completedOffers :[{
         completedOffer : {
             type : mongoose.Schema.Types.ObjectId,
