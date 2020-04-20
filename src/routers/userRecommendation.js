@@ -15,6 +15,9 @@ router.post('/profile/:id/recommendation',auth, async(req, res) => {
         if(!profile){
             return res.status(404).send()
         }
+        if(!req.user.validatedEmail){
+            return res.status(400).send({error:'User must have a verified email to do this'})
+        }
         if(String(profile.user)===String(req.user._id)){
             return res.status(400).send({error:'Vous ne pouvez pas écrire de recommendation à vous même '})
         }

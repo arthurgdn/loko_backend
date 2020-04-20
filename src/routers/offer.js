@@ -16,6 +16,9 @@ router.post('/offer/create',auth, async (req,res)=>{
         owner : req.user._id,
         completedStatus : 'created'
     })
+    if(!req.user.validatedEmail){
+        return res.status(400).send({error:'User must have a verified email to do this'})
+    }
     offer.keywords = []
     offer.collaborators.push({collaborator : req.user._id})
     try{

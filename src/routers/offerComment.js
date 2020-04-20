@@ -12,6 +12,9 @@ router.post('/offer/:id/comment',auth, async(req, res) => {
     if(!offer){
         return res.status(404).send()
     }
+    if(!req.user.validatedEmail){
+        return res.status(400).send({error:'User must have a verified email to do this'})
+    }
     const comment = new OfferComment({
         ...req.body,
         publisher : req.user._id,

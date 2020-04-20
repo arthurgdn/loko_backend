@@ -61,6 +61,9 @@ router.post('/conversation',auth,async(req,res)=>{
         ...req.body,
         admins : [{admin : req.user._id}],
     })
+    if(!req.user.validatedEmail){
+        return res.status(400).send({error:'User must have a verified email to do this'})
+    }
     try {
         conversation.members.push({member : req.user._id})
         await conversation.save()

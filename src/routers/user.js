@@ -3,7 +3,7 @@ const multer = require('multer')
 const path = require('path')
 const sharp = require('sharp')
 const auth = require('../middleware/auth')
-
+const {sendVerificationEmail,sendGoodbyeEmail} = require('../emails/account')
 const Profile = require('../models/profile')
 const User = require('../models/user')
 
@@ -19,24 +19,20 @@ router.post('/users', async (req, res) => {
     const profile = new Profile({
         user : user._id
     }) 
-    try{
+    //try{
         const anonymousPath = path.join(__dirname,'../../avatars/anonymous.png')
     
         const buffer =await  sharp(anonymousPath).toBuffer()
         user.profilePicture = buffer
         
         const token = await user.generateAuthToken()
-        
+        const verifToken = await user.generateVerificationToken()
         await user.save()
         await profile.save()
-        // we will add this when configuring sendGrid
-        //sendWelcomeEmail(user.email,user.name)
-        res.status(201).send({user,token})
-    }
-    catch(e){
         
-        res.status(400).send(e)
-    }
+        sendVerificationEmail(user.email,user.firstName,verifToken)
+        res.status(201).send({user,token})
+    
     
 })
 //returns the user
@@ -245,9 +241,9 @@ router.delete('/users/me',auth, async (req,res)=>{
      
     try {
         const email = req.user.email
-        const name = req.user.name
+        const name = req.user.firstName
         await req.user.remove()
-        //sendGoodbyeEmail(email,name)
+        sendGoodbyeEmail(email,name)
         res.send(req.user)
     }
     catch(e){

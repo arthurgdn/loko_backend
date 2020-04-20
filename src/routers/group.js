@@ -15,6 +15,9 @@ router.post('/group',auth,async (req,res)=>{
         group : group._id,
         status : 'admin'
     })
+    if(!req.user.validatedEmail){
+        return res.status(400).send({error:'User must have a verified email to do this'})
+    }
     group.keywords = []
     try{
         //Deal with keywords
