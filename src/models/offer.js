@@ -65,7 +65,11 @@ const offerSchema = new mongoose.Schema({
             required: false,
             ref:'User'
         }
-    }]
+    }],
+    image : {
+        type :Buffer,
+        required : false
+    }
 },{timestamps:true})
 
 offerSchema.virtual('offerComments',{

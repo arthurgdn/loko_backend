@@ -1,5 +1,7 @@
 
 const express = require('express')
+const multer = require('multer')
+const sharp = require('sharp')
 const Offer = require('../models/offer')
 const User = require('../models/user')
 const Keyword = require('../models/keyword')
@@ -202,6 +204,56 @@ router.get('/offers/group/:id',auth,async(req,res)=>{
 
     }catch(e){
         res.status(400).send(e)
+    }
+})
+
+
+const upload =multer({
+    limits:{
+        fileSize:2000000,
+        
+    },
+    fileFilter(req,file,callback){
+        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+            return callback(new Error('Veuillez choisir une photo'))
+        }
+        
+        callback(undefined,true)
+
+    }
+})
+
+router.post('/offer/:id/image',auth,upload.single('image'),async (req,res)=>{
+    
+    const buffer = await sharp(req.file.buffer).resize({width : 500,height : 500}).png().toBuffer() //client side can resize the image instead of doing it when upload on server side
+    const offer = await Offer.findById(req.params.id)
+    if(!offer){
+        return res.status(404).send()
+    }
+    
+    offer.image = buffer
+    await offer.save()
+    res.send()
+},(error,req,res,next)=>{
+    res.status(400).send({error: error.message})
+})
+//Recuperer la photo d'une offre
+router.get('/offer/:id/image',async (req,res)=>{
+    try{
+        
+        const offer = await Offer.findById(req.params.id)
+        
+        if(!offer || !offer.image){
+            
+            return res.status(404).send()
+        }
+        res.set('Content-Type','image/jpg')
+        
+        res.send(offer.image)
+
+
+    }catch(e){
+        res.status(404).send()
     }
 })
 module.exports = router

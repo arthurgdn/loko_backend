@@ -1,4 +1,6 @@
 const express = require('express')
+const multer = require('multer')
+const sharp = require('sharp')
 const Offer = require('../models/offer')
 const User = require('../models/user')
 const Conversation = require('../models/conversation')
@@ -187,4 +189,54 @@ router.get('/conversations/me',auth,async(req,res)=>{
         res.status(400).send(e)
     }
 })
+
+const upload =multer({
+    limits:{
+        fileSize:1000000,
+        
+    },
+    fileFilter(req,file,callback){
+        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+            return callback(new Error('Veuillez choisir une photo'))
+        }
+        
+        callback(undefined,true)
+
+    }
+})
+
+router.post('/conversation/:id/image',auth,upload.single('image'),async (req,res)=>{
+    
+    const buffer = await sharp(req.file.buffer).resize({width : 250,height : 250}).png().toBuffer() //client side can resize the image instead of doing it when upload on server side
+    const conversation = await Conversation.findById(req.params.id)
+    if(!conversation){
+        return res.status(404).send()
+    }
+    
+    conversation.image = buffer
+    await conversation.save()
+    res.send()
+},(error,req,res,next)=>{
+    res.status(400).send({error: error.message})
+})
+//Recuperer la photo de la conversation
+router.get('/conversation/:id/image',async (req,res)=>{
+    try{
+        
+        const conversation = await Conversation.findById(req.params.id)
+        
+        if(!conversation || !conversation.image){
+            
+            return res.status(404).send()
+        }
+        res.set('Content-Type','image/jpg')
+        
+        res.send(conversation.image)
+
+
+    }catch(e){
+        res.status(404).send()
+    }
+})
+
 module.exports = router

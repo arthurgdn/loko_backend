@@ -53,8 +53,7 @@ router.post('/users/login',async (req,res)=>{
 //API to change user info
 router.patch('/users/me',auth,async (req,res)=>{
     const updates = Object.keys(req.body)
-    //We will later change the API to run verifications when changing email and phone number + verification when validation
-    const allowedUpdates = ['firstName','lastName','email','phoneNumber','location','collaborators']
+    const allowedUpdates = ['firstName','lastName','phoneNumber','location','collaborators']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
         return res.status(400).send({error : 'Invalid updates'})
@@ -193,7 +192,7 @@ router.post('/users/me/avatar',auth,upload.single('avatar'),async (req,res)=>{
 },(error,req,res,next)=>{
     res.status(400).send({error: error.message})
 })
-
+//Recuperer la photo d'un utilisateur
 router.get('/users/:id/avatar',async (req,res)=>{
     try{
         
@@ -201,7 +200,7 @@ router.get('/users/:id/avatar',async (req,res)=>{
         
         if(!user || !user.profilePicture){
             
-            throw new Error('Unable to find user')
+            return res.status(404).send()
         }
         res.set('Content-Type','image/jpg')
         

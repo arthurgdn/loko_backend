@@ -1,5 +1,7 @@
 const express = require('express')
 const auth = require('../middleware/auth')
+const multer = require('multer')
+const sharp = require('sharp')
 const Group = require('../models/group')
 const GroupMembership = require('../models/groupMembership')
 const Keyword = require('../models/keyword')
@@ -120,4 +122,53 @@ router.delete('/group/:id',auth,async(req,res)=>{
     }
 })
 
+
+const upload =multer({
+    limits:{
+        fileSize:1000000,
+        
+    },
+    fileFilter(req,file,callback){
+        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+            return callback(new Error('Veuillez choisir une photo'))
+        }
+        
+        callback(undefined,true)
+
+    }
+})
+
+router.post('/group/:id/image',auth,upload.single('image'),async (req,res)=>{
+    
+    const buffer = await sharp(req.file.buffer).resize({width : 250,height : 250}).png().toBuffer() //client side can resize the image instead of doing it when upload on server side
+    const group = await Group.findById(req.params.id)
+    if(!group){
+        return res.status(404).send()
+    }
+    
+    group.image = buffer
+    await group.save()
+    res.send()
+},(error,req,res,next)=>{
+    res.status(400).send({error: error.message})
+})
+//Recuperer la photo de la conversation
+router.get('/group/:id/image',async (req,res)=>{
+    try{
+        
+        const group = await Group.findById(req.params.id)
+        
+        if(!group || !group.image){
+            
+            return res.status(404).send()
+        }
+        res.set('Content-Type','image/jpg')
+        
+        res.send(group.image)
+
+
+    }catch(e){
+        res.status(404).send()
+    }
+})
 module.exports= router
