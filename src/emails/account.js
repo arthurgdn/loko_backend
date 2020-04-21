@@ -25,7 +25,20 @@ const sendVerificationEmail = (email,name,token)=>{
     })
 }
 
+const sendPasswordResetEmail = (email,name,token)=>{
+    //only for dev
+    const link = String(process.env.PORT)+'/reset/'+token
+    sgMail.send({
+        to : email,
+        from: 'arthurguedon0@gmail.com',
+        subject : 'Réinitialisation de votre mot de passe Loko',
+        html : "Bonjour " + name + " ! <br> Vous avez demandé à réinitialiser votre mot de passe, veuillez suivre le lien suivant : <br>" + ' <a href="http://localhost:'+link+'">Réinitialiser mon mot de passe</a> <br> Si cette demande ne viens pas de vous, veuillez cliquer sur le lien et cliquer sur le bouton correspondant. <br>' + "L'équipe de Loko "
+    
+    })
+}
+
 module.exports = {
     sendVerificationEmail,
-    sendGoodbyeEmail
+    sendGoodbyeEmail,
+    sendPasswordResetEmail
 }

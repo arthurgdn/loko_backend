@@ -1,0 +1,33 @@
+const userRouter = require('./routers/user')
+const profileRouter = require('./routers/profile')
+const offerRouter = require('./routers/offer')
+const userRecommendationRouter = require('./routers/userRecommendation')
+const {messageRouter} = require('./routers/message')
+const collaborationDemandRouter = require('./routers/collaborationDemand')
+const offerCommentRouter = require('./routers/offerComment')
+const conversationRouter = require('./routers/conversation')
+const groupRouter = require('./routers/group')
+const groupMembershipRouter = require('./routers/groupMembership')
+const locationRouter = require('./routers/location')
+const feedRouter = require('./routers/feed')
+const keywordRouter = require('./routers/keyword')
+const securityRouter = require('./routers/security')
+
+const setupRoutes = (app)=>{
+app.use(userRouter)
+app.use(profileRouter)
+app.use(offerRouter)
+app.use(messageRouter)
+app.use(userRecommendationRouter)
+app.use(collaborationDemandRouter)
+app.use(offerCommentRouter)
+app.use(conversationRouter)
+app.use(groupRouter)
+app.use(groupMembershipRouter)
+app.use(locationRouter)
+app.use(feedRouter)
+app.use(keywordRouter)
+app.use(securityRouter)
+}
+
+module.exports = setupRoutes

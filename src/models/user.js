@@ -103,6 +103,12 @@ const userSchema = new mongoose.Schema({
             type: String,
             required : true
         }
+    }],
+    resetTokens : [{
+        token : {
+            type: String,
+            required : true
+        }
     }]
 },{
     timestamps : true
@@ -175,6 +181,14 @@ userSchema.methods.generateVerificationToken = async function(){
     const user = this
     const token = jwt.sign({ _id: user._id.toString()},process.env.JWT_SECRET)
     user.verifTokens = user.verifTokens.concat({token})
+    await user.save()
+    return token
+}
+
+userSchema.methods.generateResetToken = async function(){
+    const user = this
+    const token = jwt.sign({ _id: user._id.toString()},process.env.JWT_SECRET)
+    user.resetTokens = user.resetTokens.concat({token})
     await user.save()
     return token
 }

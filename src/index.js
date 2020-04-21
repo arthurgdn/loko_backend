@@ -1,56 +1,39 @@
 const express = require('express')
-const userRouter = require('./routers/user')
-const profileRouter = require('./routers/profile')
-const offerRouter = require('./routers/offer')
-const userRecommendationRouter = require('./routers/userRecommendation')
-const {messageRouter,generateLiveMessage} = require('./routers/message')
-const collaborationDemandRouter = require('./routers/collaborationDemand')
-const offerCommentRouter = require('./routers/offerComment')
-const conversationRouter = require('./routers/conversation')
-const groupRouter = require('./routers/group')
-const groupMembershipRouter = require('./routers/groupMembership')
-const locationRouter = require('./routers/location')
-const feedRouter = require('./routers/feed')
-const keywordRouter = require('./routers/keyword')
-const verifyRouter = require('./routers/verify')
-const socketioAuth = require('./middleware/socketioAuth')
+const bodyParser = require('body-parser')
 const http = require('http')
 const path = require('path')
 const socketio = require('socket.io')
-//runs database connection
+
+const socketioAuth = require('./middleware/socketioAuth')
+const setupRoutes = require('./setupRoutes')
+const {generateLiveMessage} = require('./routers/message')
+
+//Connexion à la base de données
 require('./db/mongoose')
-//use bodyParser to parse requests to use req.body property
-const bodyParser = require('body-parser')
+
+//Mise en place du serveur Express et de socket.io
 const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
+
 const publicPath = path.join(__dirname,'../public/')
-
 const port = process.env.PORT
-
+//Utilisation de bodyParser pour faciliter l'exploitation des requetes
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json())
-app.use(userRouter)
-app.use(profileRouter)
-app.use(offerRouter)
-app.use(messageRouter)
-app.use(userRecommendationRouter)
-app.use(collaborationDemandRouter)
-app.use(offerCommentRouter)
-app.use(conversationRouter)
-app.use(groupRouter)
-app.use(groupMembershipRouter)
-app.use(locationRouter)
-app.use(feedRouter)
-app.use(keywordRouter)
-app.use(verifyRouter)
 
+//On défini le chemin vers les fichiers statiques
 app.use(express.static(publicPath))
 
+//On défini les routes des api
+setupRoutes(app)
+
+//On ajoute le middleware d'auth socket.io
 io.use(socketioAuth)
 const liveMessaging = generateLiveMessage(io)
 io.on('connection',liveMessaging)
+
 server.listen(port, () => {
     console.log('Server is up on port ' + port)
 })

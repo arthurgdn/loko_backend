@@ -2,8 +2,9 @@ const express = require('express')
 const multer = require('multer')
 const path = require('path')
 const sharp = require('sharp')
+
 const auth = require('../middleware/auth')
-const {sendVerificationEmail,sendGoodbyeEmail} = require('../emails/account')
+const {sendVerificationEmail,sendGoodbyeEmail,sendPasswordResetEmail} = require('../emails/account')
 const Profile = require('../models/profile')
 const User = require('../models/user')
 
@@ -19,7 +20,7 @@ router.post('/users', async (req, res) => {
     const profile = new Profile({
         user : user._id
     }) 
-    //try{
+    try{
         const anonymousPath = path.join(__dirname,'../../avatars/anonymous.png')
     
         const buffer =await  sharp(anonymousPath).toBuffer()
@@ -32,7 +33,9 @@ router.post('/users', async (req, res) => {
         
         sendVerificationEmail(user.email,user.firstName,verifToken)
         res.status(201).send({user,token})
-    
+    }catch(e){
+        res.status(400).send(e)
+    }
     
 })
 //returns the user
@@ -209,6 +212,20 @@ router.get('/users/:id/avatar',async (req,res)=>{
 
     }catch(e){
         res.status(404).send()
+    }
+})
+//API pour réinitialiser le mot de passe
+router.post('/user/reset',async(req,res)=>{
+    try{
+        const user = await User.findOne({email:req.body.email})
+        if(!user){
+            return res.status(404).send()
+        }
+        const resetToken = await user.generateResetToken()
+        sendPasswordResetEmail(user.email,user.firstName,resetToken)
+        res.send()
+    }catch(e){
+        res.status(400).send(e)
     }
 })
 

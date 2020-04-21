@@ -1,8 +1,9 @@
 const express = require('express')
+
 const auth = require('../middleware/auth')
-const User = require('../models/user')
 const Profile = require('../models/profile')
 const UserRecommendation = require('../models/userRecommendation')
+
 const router = new express.Router()
 
 // the :id always refers to the offer's id
