@@ -14,7 +14,7 @@ const socketioAuth = async (socket,next)=>{
         
         if(!user){
             
-            throw new Error("Impossible de s'authentifier ")
+            throw new Error("Impossible de s'identifier")
         }
         //We send the token and the potential user in the request
         socket.request.token = token
@@ -23,7 +23,7 @@ const socketioAuth = async (socket,next)=>{
         return next()
     }catch(e){
         
-        return next(new Error('Erreur auth '))
+        return next(new Error("Impossible de s'identifier"))
     }
     
 }

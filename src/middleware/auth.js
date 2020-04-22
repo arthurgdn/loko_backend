@@ -11,7 +11,7 @@ const auth = async (req,res,next)=>{
         const user = await User.findOne({_id : decoded._id,'tokens.token':token})
         
         if(!user){
-            throw new Error('')
+            throw new Error('Email ou mot de passe incorrect')
         }
         //We send the token and the potential user in the request
         req.token = token
@@ -19,8 +19,8 @@ const auth = async (req,res,next)=>{
         
         next()
     }catch(e){
-        console.log(e)
-        res.status(401).send({error:"Please authenticate"})
+        
+        res.status(401).send({error:e})
     }
     
 }
