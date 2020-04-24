@@ -38,9 +38,23 @@ router.post('/users', async (req, res) => {
     }
     
 })
-//returns the user
+//returns the user and some more information (his keywords and his groups)
 router.get('/users/me',auth,async (req,res)=>{
-    res.send(req.user)
+    try{
+        await req.user.populate({path:'groupsJoined'}).execPopulate()
+        const profile = await Profile.findOne({user:req.user._id})
+        if(!profile){
+            res.status(404).send()
+        }
+        res.send({
+            ...req.user,
+            userGroups : req.user.groupsJoined,
+            userKeywords : profile.keywords
+        })
+    }catch(e){
+        res.status(400).send(e)
+    }
+    
 })
 
 //API to login

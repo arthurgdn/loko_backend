@@ -152,7 +152,7 @@ router.post('/group/:id/image',auth,upload.single('image'),async (req,res)=>{
 },(error,req,res,next)=>{
     res.status(400).send({error: error.message})
 })
-//Recuperer la photo de la conversation
+//Recuperer la photo d'un groupe
 router.get('/group/:id/image',async (req,res)=>{
     try{
         
