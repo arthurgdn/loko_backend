@@ -157,6 +157,31 @@ router.delete('/offer/:id', auth, async (req,res)=>{
         res.status(400).send(e)
     }
 })
+//API for a user to get his created offers
+router.get('/offer/me',auth,async(req,res)=>{
+    match = {}
+    if (req.query.status){
+        match.completedStatus = req.query.status
+    }
+    try {
+        
+        await req.user.populate({
+            path : 'offers',
+            match,
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort:{createdAt: -1}
+            }
+        }).execPopulate()
+
+        
+        res.send(req.user.offers)
+    }
+    catch(e){
+        res.status(500).send(e)
+    }
+})
 //API for a user to get the offers he collaborates on 
 router.get('/offer/collaborated/me',auth,async(req,res)=>{
     match = {}
