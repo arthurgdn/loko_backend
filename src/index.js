@@ -4,6 +4,7 @@ const http = require('http')
 const path = require('path')
 const socketio = require('socket.io')
 
+
 const socketioAuth = require('./middleware/socketioAuth')
 const setupRoutes = require('./setupRoutes')
 const {generateLiveMessage} = require('./routers/message')
@@ -22,6 +23,12 @@ const port = process.env.PORT
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json())
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Headers", "*")
+    res.header("Access-Control-Allow-Methods","PUT,GET,POST,DELETE,PATCH")
+    next();
+    });
 
 //On défini le chemin vers les fichiers statiques
 app.use(express.static(publicPath))
