@@ -81,7 +81,7 @@ router.post('/profile/completedOffer',auth,async (req,res)=>{
            profile.completedOffers.push({completedOffer : req.body._id})
            
            await profile.save()
-           res.send()}
+           res.send({completedOffer : req.body._id})}
         else {
             res.status(400).send({error:'Cannot add this completed offer'})
         }
