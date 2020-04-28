@@ -47,25 +47,25 @@ router.patch('/profile',auth,async (req,res)=>{
         res.status(400).send(e)
     }
 })
-router.get('/profile',auth,async (req,res)=>{
+router.get('/profile/:id',auth,async (req,res)=>{
     try{
-        const profile = await  Profile.findOne({user: req.body._id})
+        const profile = await  Profile.findOne({user: req.params.id})
         
-        const {firstName,lastName,location,profilePicture} = await User.findById(req.body._id)
+        const {firstName,lastName,location,profilePicture} = await User.findById(req.params.id)
         
         if(!profile || !firstName || !lastName){
             return res.status(404).send()
         }
-        
+        console.log({...profile._doc})
         res.send({
-            ...profile,
+            ...profile._doc,
             firstName,
             lastName,
             location,
             profilePicture
         })
     }catch(e){
-        
+        console.log(e)
         res.status(400).send(e)
     }
 })
