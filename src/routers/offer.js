@@ -13,6 +13,7 @@ const router = new express.Router()
 
 //API to create a new offer
 router.post('/offer/create',auth, async (req,res)=>{
+    
     const offer = new Offer({
         ...req.body,
         owner : req.user._id,
@@ -24,12 +25,13 @@ router.post('/offer/create',auth, async (req,res)=>{
     offer.keywords = []
     offer.collaborators.push({collaborator : req.user._id})
     try{
+        
     //Deal with keywords
     if(req.body.keywords.length>0){
         for(keyword of req.body.keywords){
-            const existingKeyword = await Keyword.findOne({name:keyword})
+            const existingKeyword = await Keyword.findOne({name:keyword.keyword})
             if(!existingKeyword){
-                const newKeyword = new Keyword({name:keyword})
+                const newKeyword = new Keyword({name:keyword.keyword})
                 offer.keywords.push({keyword:newKeyword._id})
                 await newKeyword.save()
             }else{
@@ -38,9 +40,11 @@ router.post('/offer/create',auth, async (req,res)=>{
             }
         }
     }
+    
     if(offer.scope==='general' && !!offer.groups&& offer.groups.length>0){
         return res.status(400).send({error:'Cannot add groups when scope is general'})
     }
+    
     //We check if the user is a member of the groups he publishes in 
     if(offer.scope==='group'){
         for(group of offer.groups){
@@ -49,10 +53,12 @@ router.post('/offer/create',auth, async (req,res)=>{
             return res.status(400).send({error:'You are not a member of this group'})
         }
     }
-}
+}       
+        
         await offer.save()
         res.status(201).send(offer)
     }catch(e){
+        
         res.status(400).send(e)
     }
     })
@@ -235,11 +241,11 @@ router.get('/offers/group/:id',auth,async(req,res)=>{
 
 const upload =multer({
     limits:{
-        fileSize:2000000,
+        fileSize:5242880,
         
     },
     fileFilter(req,file,callback){
-        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+        if (!file.originalname.match(/\.(png|jpg|gif)$/)){
             return callback(new Error('Veuillez choisir une photo'))
         }
         
@@ -258,7 +264,7 @@ router.post('/offer/:id/image',auth,upload.single('image'),async (req,res)=>{
     
     offer.image = buffer
     await offer.save()
-    res.send()
+    res.send(buffer)
 },(error,req,res,next)=>{
     res.status(400).send({error: error.message})
 })

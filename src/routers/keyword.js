@@ -28,4 +28,18 @@ router.get('/keyword/:id',auth,async(req,res)=>{
         res.status(400).send(e)
     }
 })
+router.get('/keywords',auth,async(req,res)=>{
+    
+    try{const keywords = await Keyword.find()
+    if(!keywords){
+        return res.send([])
+
+    }
+    
+    res.send(keywords)
+}catch(e){
+        res.status(400).send(e)
+    }
+
+})
 module.exports = router

@@ -7,6 +7,7 @@ const auth = require('../middleware/auth')
 const {sendVerificationEmail,sendGoodbyeEmail,sendPasswordResetEmail} = require('../emails/account')
 const Profile = require('../models/profile')
 const User = require('../models/user')
+const Group = require('../models/group')
 
 const findCollaboratorByName = require('../tools/users/findCollaboratorByName')
 
@@ -44,11 +45,23 @@ router.get('/users/me',auth,async (req,res)=>{
         await req.user.populate({path:'groupsJoined'}).execPopulate()
         const profile = await Profile.findOne({user:req.user._id})
         if(!profile){
-            res.status(404).send()
+            return res.status(404).send()
         }
+        const userGroups = []
+        for(group of req.user.groupsJoined){
+            
+            const foundGroup = await Group.findById(group.group)
+            
+            if(!foundGroup){
+                return res.status(404).send()
+            }
+            userGroups.push(foundGroup)
+
+        }
+        
         res.send({
-            ...req.user,
-            userGroups : req.user.groupsJoined,
+            ...req.user._doc,
+            userGroups,
             userKeywords : profile.keywords
         })
     }catch(e){
@@ -164,7 +177,7 @@ router.post('/users/sendcollabdemand',auth,async (req,res)=>{
  //API to fetch collaborator by name
  router.get('/users/collaborators/name',auth,async(req,res)=>{
     const matchingCollaborators = await findCollaboratorByName(req.body.searchString,req.user)
-    console.log(matchingCollaborators)
+    
     res.send(matchingCollaborators) 
  })
 
@@ -173,7 +186,7 @@ router.post('/users/sendcollabdemand',auth,async (req,res)=>{
  router.post('/users/phone',auth,async(req,res)=>{
      const phoneNumber = req.body.phoneNumber
      const existingUser = await User.findOne({phoneNumber})
-     console.log(existingUser)
+     
      if(existingUser===null){
          req.user.phoneNumber = phoneNumber
          await req.user.save()
