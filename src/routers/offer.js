@@ -245,7 +245,7 @@ const upload =multer({
         
     },
     fileFilter(req,file,callback){
-        if (!file.originalname.match(/\.(png|jpg|gif)$/)){
+        if (!file.originalname.match(/\.(png|jpg|gif|JPG|PNG|GIF)$/)){
             return callback(new Error('Veuillez choisir une photo'))
         }
         
@@ -256,7 +256,7 @@ const upload =multer({
 
 router.post('/offer/:id/image',auth,upload.single('image'),async (req,res)=>{
     
-    const buffer = await sharp(req.file.buffer).resize({width : 500,height : 500}).png().toBuffer() //client side can resize the image instead of doing it when upload on server side
+    const buffer = await sharp(req.file.buffer).resize({width : 500,height : 500}).toBuffer() //client side can resize the image instead of doing it when upload on server side
     const offer = await Offer.findById(req.params.id)
     if(!offer){
         return res.status(404).send()
@@ -266,6 +266,7 @@ router.post('/offer/:id/image',auth,upload.single('image'),async (req,res)=>{
     await offer.save()
     res.send(buffer)
 },(error,req,res,next)=>{
+    console.log(error.message)
     res.status(400).send({error: error.message})
 })
 //Recuperer la photo d'une offre

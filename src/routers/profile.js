@@ -6,7 +6,9 @@ const User = require('../models/user')
 const Keyword = require('../models/keyword')
 const router = new express.Router()
 router.patch('/profile',auth,async (req,res)=>{
+    
     const updates = Object.keys(req.body)
+    
     const allowedUpdates = ['description','summary','skills','keywords']
     
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
@@ -44,6 +46,7 @@ router.patch('/profile',auth,async (req,res)=>{
         res.send(profile)
     }
     catch(e){
+        
         res.status(400).send(e)
     }
 })
@@ -54,18 +57,31 @@ router.get('/profile/:id',auth,async (req,res)=>{
         const {firstName,lastName,location,profilePicture} = await User.findById(req.params.id)
         
         if(!profile || !firstName || !lastName){
+            
             return res.status(404).send()
         }
-        console.log({...profile._doc})
+        const keywords = []
+        
+        for(keyword of profile.keywords){
+            
+            const newKeyword = await Keyword.findById(keyword.keyword)
+            
+            if(!newKeyword){
+                return res.status(404).send()
+            }
+            keywords.push(newKeyword)
+        }
+        
         res.send({
             ...profile._doc,
             firstName,
             lastName,
             location,
-            profilePicture
+            profilePicture,
+            keywords
         })
     }catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
 })
