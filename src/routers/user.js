@@ -2,6 +2,7 @@ const express = require('express')
 const multer = require('multer')
 const path = require('path')
 const sharp = require('sharp')
+const bcrypt = require('bcryptjs')
 
 const auth = require('../middleware/auth')
 const {sendVerificationEmail,sendGoodbyeEmail,sendPasswordResetEmail} = require('../emails/account')
@@ -14,6 +15,18 @@ const findCollaboratorByName = require('../tools/users/findCollaboratorByName')
 
 const router = new express.Router()
 
+router.post('/sendVerification',auth,async(req,res)=>{
+    try{
+    if(req.user.validatedEmail===false){
+        const verifToken = await req.user.generateVerificationToken()
+        sendVerificationEmail(req.user.email,req.user.firstName,verifToken)
+        await req.user.save()
+        res.send()
+    }}catch(e){
+        res.status(400).send(e)
+    }
+    
+})
 //API to signup on the platform
 router.post('/users', async (req, res) => {
     
@@ -35,6 +48,7 @@ router.post('/users', async (req, res) => {
         sendVerificationEmail(user.email,user.firstName,verifToken)
         res.status(201).send({user,token})
     }catch(e){
+        
         res.status(400).send(e)
     }
     
@@ -105,8 +119,10 @@ router.patch('/users/me',auth,async (req,res)=>{
 //API to change password
 router.patch('/users/me/password',auth,async (req,res)=>{
     try{
+        
         //We check for confirmation of the current password 
      const passwordValidate = await bcrypt.compare(req.body.currentPass,req.user.password)
+     
     if (passwordValidate===true){
         
         req.user.password = req.body.password
@@ -115,9 +131,10 @@ router.patch('/users/me/password',auth,async (req,res)=>{
         res.send()
     }
     else{
-        res.status(400).send(e)
+        res.status(400).send({error:"L'ancien mot de passe n'est pas valide"})
     }
  }catch(e){
+     console.log(e)
          res.status(400).send(e)
     }
  
@@ -200,11 +217,11 @@ router.post('/users/sendcollabdemand',auth,async (req,res)=>{
 
  const upload =multer({
     limits:{
-        fileSize:1000000,
+        fileSize:5000000,
         
     },
     fileFilter(req,file,callback){
-        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+        if (!file.originalname.match(/\.(png|jpg|jpeg|PNG|JPG|gif|GIF)$/)){
             return callback(new Error('Please upload an image'))
         }
         
@@ -220,6 +237,7 @@ router.post('/users/me/avatar',auth,upload.single('avatar'),async (req,res)=>{
     await req.user.save()
     res.send()
 },(error,req,res,next)=>{
+    console.log(error.message)
     res.status(400).send({error: error.message})
 })
 //Recuperer la photo d'un utilisateur
@@ -280,9 +298,15 @@ router.post('/users/logoutAll',auth,async(req,res)=>{
 })
 
 //API to delete account
-router.delete('/users/me',auth, async (req,res)=>{
+router.post('/users/me/delete',auth, async (req,res)=>{
      
     try {
+        console.log(req.body)
+        const passwordValidate = await bcrypt.compare(req.body.password,req.user.password)
+        
+        if(!passwordValidate){
+            return res.status(400).send({error:'Unable to delete account '})
+        }
         const email = req.user.email
         const name = req.user.firstName
         await req.user.remove()
@@ -290,6 +314,7 @@ router.delete('/users/me',auth, async (req,res)=>{
         res.send(req.user)
     }
     catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
