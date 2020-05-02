@@ -25,9 +25,12 @@ router.get('/verify/:token',async(req,res)=>{
     }
     
 })
-
-router.patch('/reset/:token',async(req,res)=>{
+router.get('/reset/:token',(req,res)=>{
+    res.render('passwordReset',{})
+})
+router.patch('/sendReset/:token',async(req,res)=>{
     try{
+        console.log('called')
         const decoded = jwt.verify(req.params.token,process.env.JWT_SECRET)
         const user = await User.findOne({_id:decoded._id,'resetTokens.token':req.params.token})
         if(!user){

@@ -1,5 +1,6 @@
 const express = require('express')
 const Offer = require('../models/offer')
+const User = require('../models/user')
 const auth = require('../middleware/auth')
 const {distanceLatLong} = require('../tools/utils/location')
 
@@ -17,7 +18,20 @@ router.get('/offers/location',auth,async (req,res)=>{
             const dist = distanceLatLong(offer.location.coordinates[1],offer.location.coordinates[0],req.user.location.coordinates[1],req.user.location.coordinates[0])
             
             if(dist<=radius){
-                filteredOffers.push(offer)
+                const keywords = []
+                for(keyword of offer.keywords){
+            
+                    const newKeyword = await Keyword.findById(keyword.keyword)
+        
+                    if(!newKeyword){
+                        return res.status(404).send()
+                        }
+                   keywords.push(newKeyword)
+                    }
+                const offerPublisher = await User.findById(offer.owner)
+
+                filteredOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                
             }
         }
           

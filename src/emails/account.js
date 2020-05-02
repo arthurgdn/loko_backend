@@ -28,6 +28,7 @@ const sendVerificationEmail = (email,name,token)=>{
 const sendPasswordResetEmail = (email,name,token)=>{
     //only for dev
     const link = String(process.env.PORT)+'/reset/'+token
+    console.log(link)
     sgMail.send({
         to : email,
         from: 'arthurguedon0@gmail.com',

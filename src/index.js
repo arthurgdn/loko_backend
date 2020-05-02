@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const http = require('http')
 const path = require('path')
 const socketio = require('socket.io')
+const hbs = require('hbs')
 
 
 const socketioAuth = require('./middleware/socketioAuth')
@@ -18,6 +19,10 @@ const server = http.createServer(app)
 const io = socketio(server)
 
 const publicPath = path.join(__dirname,'../public/')
+const viewsPath = path.join(__dirname,'../templates/views')
+app.set('view engine','hbs')
+app.set('views',viewsPath)
+
 const port = process.env.PORT
 //Utilisation de bodyParser pour faciliter l'exploitation des requetes
 app.use(bodyParser.json({limit: '50mb'}));

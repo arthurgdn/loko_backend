@@ -72,6 +72,7 @@ router.get('/offer/:id',auth,async (req,res)=>{
         if (!offer){
             return res.status(404).send()
         }
+        const offerPublisher = await User.findById(offer.owner)
         //We check if the user is a member of at least one of the groups
         if(offer.scope==='group'){
             let isMember= false
@@ -86,10 +87,21 @@ router.get('/offer/:id',auth,async (req,res)=>{
             }
         
     }
-        res.send(offer)
+    const keywords = []
+    for(keyword of offer.keywords){
+            
+        const newKeyword = await Keyword.findById(keyword.keyword)
+        
+        if(!newKeyword){
+            return res.status(404).send()
+        }
+        keywords.push(newKeyword)
+    }
+        res.send({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
     }
     catch(e){
-        res.status(500).send(e)
+        console.log(e)
+        res.status(400).send(e)
     }
     
 
@@ -164,7 +176,8 @@ router.delete('/offer/:id', auth, async (req,res)=>{
     }
 })
 //API for a user to get his created offers
-router.get('/offer/me',auth,async(req,res)=>{
+router.get('/offers/me',auth,async(req,res)=>{
+    console.log('appelé')
     match = {}
     if (req.query.status){
         match.completedStatus = req.query.status
@@ -180,16 +193,34 @@ router.get('/offer/me',auth,async(req,res)=>{
                 sort:{createdAt: -1}
             }
         }).execPopulate()
-
+        const formatedOffers = []
+        for(offer of req.user.offers){
+            const keywords = []
+            for(keyword of offer.keywords){
+            
+                const newKeyword = await Keyword.findById(keyword.keyword)
         
-        res.send(req.user.offers)
+                if(!newKeyword){
+                    return res.status(404).send()
+                    }
+                keywords.push(newKeyword)
+                }
+                const offerPublisher = await User.findById(offer.owner)
+
+                formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                                    
+        }
+        
+        res.send(formatedOffers)
     }
     catch(e){
-        res.status(500).send(e)
+        console.log(e)
+        res.status(400).send(e)
     }
 })
 //API for a user to get the offers he collaborates on 
-router.get('/offer/collaborated/me',auth,async(req,res)=>{
+router.get('/offers/collaborated/me',auth,async(req,res)=>{
+    
     match = {}
     if (req.query.status){
         match.completedStatus = req.query.status
@@ -205,12 +236,29 @@ router.get('/offer/collaborated/me',auth,async(req,res)=>{
                 sort:{createdAt: -1}
             }
         }).execPopulate()
-
+        const formatedOffers = []
+        for(offer of req.user.collaboratedOffers){
+            const keywords = []
+            for(keyword of offer.keywords){
+            
+                const newKeyword = await Keyword.findById(keyword.keyword)
         
-        res.send(req.user.collaboratedOffers)
+                if(!newKeyword){
+                    return res.status(404).send()
+                    }
+                keywords.push(newKeyword)
+                }
+                const offerPublisher = await User.findById(offer.owner)
+
+                formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                                    
+        }
+        
+        res.send(formatedOffers)
     }
     catch(e){
-        res.status(500).send(e)
+        console.log(e)
+        res.status(400).send(e)
     }
 })
 //Get all offers in a group
@@ -231,7 +279,25 @@ router.get('/offers/group/:id',auth,async(req,res)=>{
             sort:{createdAt: -1}
         }
     }).execPopulate()
-        res.send(group.offers)
+    const formatedOffers = []
+    for(offer of group.offers){
+        const keywords = []
+        for(keyword of offer.keywords){
+        
+            const newKeyword = await Keyword.findById(keyword.keyword)
+    
+            if(!newKeyword){
+                return res.status(404).send()
+                }
+            keywords.push(newKeyword)
+            }
+            const offerPublisher = await User.findById(offer.owner)
+
+            formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                                
+    }
+    
+    res.send(formatedOffers)
 
     }catch(e){
         res.status(400).send(e)

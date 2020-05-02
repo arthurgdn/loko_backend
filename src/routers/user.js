@@ -262,6 +262,7 @@ router.get('/users/:id/avatar',async (req,res)=>{
 //API pour réinitialiser le mot de passe
 router.post('/user/reset',async(req,res)=>{
     try{
+        console.log('oui')
         const user = await User.findOne({email:req.body.email})
         if(!user){
             return res.status(404).send()
