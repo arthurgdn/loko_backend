@@ -29,9 +29,9 @@ router.post('/offer/create',auth, async (req,res)=>{
     //Deal with keywords
     if(req.body.keywords.length>0){
         for(keyword of req.body.keywords){
-            const existingKeyword = await Keyword.findOne({name:keyword.keyword})
+            const existingKeyword = await Keyword.findOne({name:keyword})
             if(!existingKeyword){
-                const newKeyword = new Keyword({name:keyword.keyword})
+                const newKeyword = new Keyword({name:keyword})
                 offer.keywords.push({keyword:newKeyword._id})
                 await newKeyword.save()
             }else{
@@ -100,7 +100,7 @@ router.get('/offer/:id',auth,async (req,res)=>{
         res.send({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
     }
     catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
     
@@ -108,18 +108,22 @@ router.get('/offer/:id',auth,async (req,res)=>{
 })
 //API to edit an offer
 router.patch('/offer/:id',auth, async (req,res)=>{
+    
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['title','description','location','locationRadius','completedStatus','keywords']
+    const allowedUpdates = ['title','description','location','locationRadius','completedStatus','keywords','scope','groups']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
+        
         return res.status(400).send({error : 'Invalid updates'})
     } 
     try {
         const offer = await Offer.findOne({_id : req.params.id})
         if(!offer){
+            
             return res.status(404).send()
         }
         if(String(offer.owner)!==String(req.user._id)){
+            
             return res.status(400).send({error:'You have to be the publisher of the offer'})
         }
           for(update of updates){
@@ -151,6 +155,7 @@ router.patch('/offer/:id',auth, async (req,res)=>{
     }
 
     catch(e){
+        
         res.status(400).send(e)
     }
 })
@@ -159,7 +164,7 @@ router.patch('/offer/:id',auth, async (req,res)=>{
 router.delete('/offer/:id', auth, async (req,res)=>{
 
     try {
-        const offer = await Offer.findbyId(req.params.id)
+        const offer = await Offer.findById(req.params.id)
 
         
         if(!offer){
@@ -172,12 +177,13 @@ router.delete('/offer/:id', auth, async (req,res)=>{
         res.send(deletedOffer)
     }
     catch(e){
+        
         res.status(400).send(e)
     }
 })
 //API for a user to get his created offers
 router.get('/offers/me',auth,async(req,res)=>{
-    console.log('appelé')
+    
     match = {}
     if (req.query.status){
         match.completedStatus = req.query.status
@@ -205,16 +211,25 @@ router.get('/offers/me',auth,async(req,res)=>{
                     }
                 keywords.push(newKeyword)
                 }
+            const collaborators = []
+            for (collaborator of offer.collaborators){
+                const newCollaborator = await User.findById(collaborator.collaborator)
+                if(!newCollaborator){
+                    return res.status(404).send()
+                }
+                collaborators.push(newCollaborator)
+                
+            }
                 const offerPublisher = await User.findById(offer.owner)
 
-                formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                formatedOffers.push({...offer._doc,collaborators,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
         res.send(formatedOffers)
     }
     catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
 })
@@ -248,16 +263,25 @@ router.get('/offers/collaborated/me',auth,async(req,res)=>{
                     }
                 keywords.push(newKeyword)
                 }
+                const collaborators = []
+                for (collaborator of offer.collaborators){
+                    const newCollaborator = await User.findById(collaborator.collaborator)
+                    if(!newCollaborator){
+                        return res.status(404).send()
+                    }
+                    collaborators.push(newCollaborator)
+                    
+                }
                 const offerPublisher = await User.findById(offer.owner)
 
-                formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                formatedOffers.push({...offer._doc,collaborators,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
         res.send(formatedOffers)
     }
     catch(e){
-        console.log(e)
+       
         res.status(400).send(e)
     }
 })
@@ -332,7 +356,7 @@ router.post('/offer/:id/image',auth,upload.single('image'),async (req,res)=>{
     await offer.save()
     res.send(buffer)
 },(error,req,res,next)=>{
-    console.log(error.message)
+    
     res.status(400).send({error: error.message})
 })
 //Recuperer la photo d'une offre

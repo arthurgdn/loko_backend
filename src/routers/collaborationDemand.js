@@ -5,6 +5,7 @@ const User = require('../models/user')
 const auth = require('../middleware/auth')
 const CollaborationDemand = require('../models/collaborationDemand')
 const router = new express.Router()
+
 router.get('/offer/:id/demands',auth,async (req,res)=>{
     try{
         const offer = await Offer.findById(req.params.id)
@@ -22,8 +23,18 @@ router.get('/offer/:id/demands',auth,async (req,res)=>{
                 sort:{createdAt: -1}
             }
         }).execPopulate()
-        res.send(offer.collaborationDemands)
+        finalDemands =[]
+        
+        for(demand of offer.collaborationDemands){
+            const user = await User.findById(demand.from)
+            if(!user){
+                return res.status(404).send(e)
+            }
+            finalDemands.push({message: demand.message,offer:demand.offer,from:user})
+        }
+        res.send(finalDemands)
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
@@ -54,7 +65,7 @@ router.post('/offer/:id/demand',auth,async (req,res)=>{
     
 })
 
-router.delete('/offer/:id/demand',auth,async(req,res)=>{
+router.post('/offer/:id/demand/sort',auth,async(req,res)=>{
     try{
         const offer = await Offer.findById(req.params.id)
             if (!offer){
@@ -73,6 +84,8 @@ router.delete('/offer/:id/demand',auth,async(req,res)=>{
             
             offer.collaborators.push({collaborator:req.body._id})
             await offer.save()
+            res.send(demand)
+        }else{
             res.send(demand)
         }
     }catch(e){
