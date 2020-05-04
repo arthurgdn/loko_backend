@@ -1,6 +1,7 @@
 const express = require('express')
 const auth = require('../middleware/auth')
 const Offer = require('../models/offer')
+const User = require('../models/user')
 const OfferComment = require('../models/offerComment')
 const router = new express.Router()
 
@@ -35,9 +36,12 @@ router.post('/offer/:id/comment',auth, async(req, res) => {
         
     }
         await comment.save()
-        res.status(201).send(comment)
+        
+        
+        res.status(201).send({...comment._doc,publisherId:req.user._id,publisherName:req.user.firstName+' '+req.user.lastName})
     }
     catch(e) {
+        
         res.status(400).send(e)
     }
 })
@@ -73,9 +77,16 @@ router.get('/offer/:id/comments',auth,async (req,res)=>{
                 sort:{createdAt: -1}
             }
         }).execPopulate()
-
+        const formattedComments = []
+        for (const comment of offer.offerComments){
+            const publisher = await User.findById(comment.publisher)
+            if(!publisher){
+                return res.status(404).send()
+            }
+            formattedComments.push({...comment._doc,publisherId:publisher._id,publisherName:publisher.firstName + ' '+publisher.lastName})
+        }
         
-        res.send(offer.offerComments)
+        res.send(formattedComments)
     }
     catch(e){
         res.status(500).send(e)
