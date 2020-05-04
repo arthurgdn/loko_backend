@@ -40,12 +40,15 @@ router.get('/offer/:id/demands',auth,async (req,res)=>{
 })
 
 router.post('/offer/:id/demand',auth,async (req,res)=>{
-    //try {
+    try {
     const offer = await Offer.findById(req.params.id)
     
         if(!offer){
             return res.status(404).send()
         }
+    if(!req.user.validatedEmail){
+        return res.status(400).send({error:'User must have a verified email to do this'})
+    }
     const inCollaborators = offer.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.user._id))
     const existingDemand = await CollaborationDemand.find({offer:req.params.id,from:req.user._id})
     
@@ -61,7 +64,10 @@ router.post('/offer/:id/demand',auth,async (req,res)=>{
         from : req.user._id
     })
     await demand.save()
-    res.status(201).send(demand)
+    res.status(201).send(demand)}
+    catch(e){
+        res.status(400).send(e)
+    }
     
 })
 
