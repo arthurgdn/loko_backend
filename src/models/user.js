@@ -76,7 +76,12 @@ const userSchema = new mongoose.Schema({
             type: [Number],
             required: false
           }
-        }
+        },
+    locationText : {
+        type : String,
+        required : false,
+        trim:true
+    }
     ,
     collaborators : [{
         collaborator : {

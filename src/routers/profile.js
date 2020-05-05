@@ -54,7 +54,7 @@ router.get('/profile/:id',auth,async (req,res)=>{
     try{
         const profile = await  Profile.findOne({user: req.params.id})
         
-        const {firstName,lastName,location,profilePicture} = await User.findById(req.params.id)
+        const {firstName,lastName,location,locationText,profilePicture} = await User.findById(req.params.id)
         
         if(!profile || !firstName || !lastName){
             
@@ -77,6 +77,7 @@ router.get('/profile/:id',auth,async (req,res)=>{
             firstName,
             lastName,
             location,
+            locationText,
             profilePicture,
             keywords
         })

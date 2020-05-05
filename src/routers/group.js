@@ -59,7 +59,7 @@ router.get('/group/:id',auth,async(req,res)=>{
 })
 router.patch('/group/:id',auth,async(req,res)=>{
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['name','description','location','keywords','groupType','securityStatus']
+    const allowedUpdates = ['name','description','location','locationText','keywords','groupType','securityStatus']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
         return res.status(400).send({error : 'Invalid updates'})

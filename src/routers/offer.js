@@ -110,7 +110,7 @@ router.get('/offer/:id',auth,async (req,res)=>{
 router.patch('/offer/:id',auth, async (req,res)=>{
     
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['title','description','location','locationRadius','completedStatus','keywords','scope','groups']
+    const allowedUpdates = ['title','description','location','locationText','locationRadius','completedStatus','keywords','scope','groups']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
         

@@ -97,7 +97,7 @@ router.post('/users/login',async (req,res)=>{
 //API to change user info
 router.patch('/users/me',auth,async (req,res)=>{
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['firstName','lastName','phoneNumber','location','collaborators']
+    const allowedUpdates = ['firstName','lastName','phoneNumber','location','locationText','collaborators']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
         return res.status(400).send({error : 'Invalid updates'})
