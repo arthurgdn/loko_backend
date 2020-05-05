@@ -164,29 +164,81 @@ router.post('/users/sendcollabdemand',auth,async (req,res)=>{
         res.status(400).send(e)
     }
 })
- //API to accept a collaborator's demand
- router.post('/users/acceptcollab/',auth,async (req,res)=>{
+
+//Récupérer les demandes de collaboration reçues
+router.get('/users/collabdemands',auth,async(req,res)=>{
+    try{
+        const formattedCollaborationDemands = []
+        for (demand of req.user.collaborationDemands){
+            const {_id,firstName,lastName} = await User.findById(demand.demand)
+            if(!_id){
+                return res.status(404).send
+            }
+            formattedCollaborationDemands.push({demand:_id,firstName,lastName})
+        }
+        res.send(formattedCollaborationDemands)
+
+    }catch(e){
+        res.status(400).send(e)
+    }
+})
+
+//Récupérer les collaborateurs actuels
+router.get('/users/collab',auth,async(req,res)=>{
+    try{
+        const formattedCollaborators = []
+        for (collaborator of req.user.collaborators){
+            const {_id,firstName,lastName} = await User.findById(collaborator.collaborator)
+            if(!_id){
+                return res.status(404).send
+            }
+            console.log(_id)
+            formattedCollaborators.push({collaborator:_id,firstName,lastName})
+        }
+        res.send(formattedCollaborators)
+
+    }catch(e){
+        res.status(400).send(e)
+    }
+})
+ //API to accept or reject a collaborator's demand
+ router.post('/users/sortcollab/',auth,async (req,res)=>{
      try{
+         
          const isInCollaboratorsDemand = req.user.collaborationDemands.find((demand)=>String(demand.demand)===String(req.body._id))
          const isAlreadyCollaborator = req.user.collaborators.find((collaborator)=>String(collaborator.collaborator) ===String(req.body._id))
          const collaboratorExists = !!(await User.findOne({_id:req.body._id}))
          
          //We check if this user exists, is not already a collaborator and if it's not the user himself
-         if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id) && collaboratorExists && isInCollaboratorsDemand!==undefined){
-            req.user.collaborators.push({collaborator : req.body._id})
-            const collaborator = await User.findById(req.body._id)
-            if(!collaborator){
-                res.status(404).send()
+         if(isAlreadyCollaborator===undefined && String(req.body._id) !==String(req.user._id) && collaboratorExists && isInCollaboratorsDemand!==undefined ){
+            if(req.body.status==='accept'){
+                req.user.collaborators.push({collaborator : req.body._id})
+                const collaborator = await User.findById(req.body._id)
+                if(!collaborator){
+                    res.status(404).send()
+                }
+
+                collaborator.collaborators.push({collaborator : req.user._id})
+                await collaborator.save()
+                req.user.collaborationDemands = req.user.collaborationDemands.filter((demand)=>String(demand.demand) !==String(req.body._id))  
+                await req.user.save()
+            
+                res.send({collaborator: collaborator._id,firstName: collaborator.firstName,lastName:collaborator.lastName})
             }
-            collaborator.collaborators.push({collaborator : req.user._id})
-            //we delete the collaborator's demand from the db
-            req.user.collaborationDemands = req.user.collaborationDemands.filter((demand)=>String(demand.demand) !==String(req.body._id))  
-            await req.user.save()
-            res.send()}
+            else{
+                req.user.collaborationDemands = req.user.collaborationDemands.filter((demand)=>String(demand.demand) !==String(req.body._id))  
+                await req.user.save()
+                res.send()
+            }}
+            
+            
+            
          else {
+             
              res.status(400).send('Cannot add this collaborator')
          }
      }catch(e){
+         
          res.status(400).send(e)
      }
  })
