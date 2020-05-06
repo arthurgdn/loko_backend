@@ -19,7 +19,14 @@ router.get('/conversation/:id',auth,async (req,res)=>{
         if(!conversation.members.find((member)=>String(member.member)===String(req.user._id))){
             return res.status(400).send({error:'User is not a member of this conversation'})
         }
-        res.send(conversation)
+        const formattedMembers = []
+        for (member of conversation.members){
+            const {_id,firstName,lastName} = await User.findById(member.member)
+            if(!_id){
+                return res.status(404).send()
+            }
+            formattedMembers.push({member:_id,firstName,lastName})}
+        res.send({...conversation._doc,members:formattedMembers})
     }catch(e){
         res.status(400).send(e)
     }
@@ -69,7 +76,14 @@ router.post('/conversation',auth,async(req,res)=>{
     try {
         conversation.members.push({member : req.user._id})
         await conversation.save()
-        res.status(201).send(conversation)
+        const formattedMembers = []
+        for (member of conversation.members){
+            const {_id,firstName,lastName} = await User.findById(member.member)
+            if(!_id){
+                return res.status(404).send()
+            }
+            formattedMembers.push({member:_id,firstName,lastName})}
+        res.status(201).send({...conversation._doc,members:formattedMembers})
     }catch(e){
         res.status(400).send(e)
     }
@@ -111,8 +125,7 @@ router.post('/conversation/:id/admin',auth,async(req,res)=>{
                 return res.status(400).send({error:'User is not a member of this conversation'})
             }
             conversation.admins.push({admin:req.body._id})
-            await conversation.save()
-            res.send(conversation)
+            
 
         }else if (req.body.newStatus==='unadmin'){
             if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.body._id))){
@@ -122,11 +135,19 @@ router.post('/conversation/:id/admin',auth,async(req,res)=>{
             }
 
             conversation.admins = conversation.admins.filter((admin)=>String(admin.admin)!==String(req.body._id))
-            await conversation.save()
-            res.send(conversation)
+            
         }else{
             return res.status(404).send()
         }
+        await conversation.save()
+        const formattedMembers = []
+            for (member of conversation.members){
+                const {_id,firstName,lastName} = await User.findById(member.member)
+                if(!_id){
+                    return res.status(404).send()
+                }
+                formattedMembers.push({member:_id,firstName,lastName})}
+            res.send({...conversation._doc,members:formattedMembers})
     }catch(e){
         res.status(400).send(e)
     }
@@ -151,22 +172,30 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
                 return res.status(400).send({error:'User is already a member'})
             }
             conversation.members.push({member:req.body._id})
-            await conversation.save()
-            res.send(conversation)
+            
 
         }else if (req.body.action==='remove'){
             if(!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
                 return res.status(400).send({error:'User is not a member'})
             }
             if(conversation.members.length===2){
-                res.send(await Conversation.findByIdAndDelete(req.params.id))
+                await Conversation.findByIdAndDelete(req.params.id)
+                return res.send({})
             }
-            conversation.members = conversation.members.filter((members)=>String(member.member)!==String(req.body._id))
-            await conversation.save()
-            res.send(conversation)
+            conversation.members = conversation.members.filter((member)=>String(member.member)!==String(req.body._id))
+              
         }else{
             return res.status(404).send()
         }
+        await conversation.save()
+        const formattedMembers = []
+            for (member of conversation.members){
+                const {_id,firstName,lastName} = await User.findById(member.member)
+                if(!_id){
+                    return res.status(404).send()
+                }
+                formattedMembers.push({member:_id,firstName,lastName})}
+            res.send({...conversation._doc,members:formattedMembers})
 
     }catch(e){
         res.status(400).send(e)
@@ -184,19 +213,33 @@ router.get('/conversations/me',auth,async(req,res)=>{
                 sort:{createdAt: -1}
             }
         }).execPopulate()
-        res.send(req.user.conversations)
+        const formattedConversations = []
+        for (conversation of req.user.conversations){
+            const formattedMembers = []
+            for (member of conversation.members){
+                const {_id,firstName,lastName} = await User.findById(member.member)
+                if(!_id){
+                    return res.status(404).send()
+                }
+                formattedMembers.push({member:_id,firstName,lastName})
+            }
+            formattedConversations.push({...conversation._doc,members : formattedMembers})
+        }
+
+        res.send(formattedConversations)
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
 
 const upload =multer({
     limits:{
-        fileSize:1000000,
+        fileSize:5000000,
         
     },
     fileFilter(req,file,callback){
-        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+        if (!file.originalname.match(/\.(png|jpg|jpeg|gif|PNG|JPG|GIF)$/)){
             return callback(new Error('Veuillez choisir une photo'))
         }
         
@@ -206,7 +249,7 @@ const upload =multer({
 })
 
 router.post('/conversation/:id/image',auth,upload.single('image'),async (req,res)=>{
-    
+    console.log('buffer',req.file.buffer)
     const buffer = await sharp(req.file.buffer).resize({width : 250,height : 250}).png().toBuffer() //client side can resize the image instead of doing it when upload on server side
     const conversation = await Conversation.findById(req.params.id)
     if(!conversation){
@@ -215,8 +258,9 @@ router.post('/conversation/:id/image',auth,upload.single('image'),async (req,res
     
     conversation.image = buffer
     await conversation.save()
-    res.send()
+    res.send(buffer)
 },(error,req,res,next)=>{
+    console.log(error)
     res.status(400).send({error: error.message})
 })
 //Recuperer la photo de la conversation
