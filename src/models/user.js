@@ -207,7 +207,7 @@ userSchema.methods.toJSON = function (){
     delete userObject.email
     delete userObject.resetTokens
     delete userObject.verifTokens
-    delete userObject.avatar
+    delete userObject.profilePicture
 
     return userObject
 }

@@ -80,9 +80,9 @@ router.get('/feed',auth,async (req,res)=>{
 
                                     //We format the response
                                     const keywords = []
-                                    for(keyword of offer.keywords){
+                                    for(offerKeyword of offer.keywords){
             
-                                    const newKeyword = await Keyword.findById(keyword.keyword)
+                                    const newKeyword = await Keyword.findById(offerKeyword.keyword)
         
                                     if(!newKeyword){
                                         return res.status(404).send()
@@ -104,6 +104,7 @@ router.get('/feed',auth,async (req,res)=>{
         
         res.send(feed.sort((a, b) => a.points < b.points ? 1 : -1 ))
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
