@@ -17,7 +17,8 @@ router.post('/offer/create',auth, async (req,res)=>{
     const offer = new Offer({
         ...req.body,
         owner : req.user._id,
-        completedStatus : 'created'
+        completedStatus : 'created',
+        hasImage : false
     })
     if(!req.user.validatedEmail){
         return res.status(400).send({error:'User must have a verified email to do this'})
@@ -353,6 +354,7 @@ router.post('/offer/:id/image',auth,upload.single('image'),async (req,res)=>{
     }
     
     offer.image = buffer
+    offer.hasImage = true
     await offer.save()
     res.send(buffer)
 },(error,req,res,next)=>{

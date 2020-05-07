@@ -29,6 +29,10 @@ const conversationSchema = new mongoose.Schema({
     image : {
         type: Buffer,
         required : false
+    },
+    hasImage : {
+        type:Boolean,
+        required: false
     }
 },{timestamps: true})
 
@@ -38,7 +42,14 @@ conversationSchema.virtual('messages',{
     foreignField : 'conversation'
 })
 
+//On minimise la taille des données à renvoyer
+conversationSchema.methods.toJSON = function (){
+    const conversation = this
+    const conversationObject = conversation.toObject()
+    delete conversationObject.image
 
+    return conversationObject
+}
 
 conversationSchema.pre('remove', async function(next){
     const conversation = this

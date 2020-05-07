@@ -21,6 +21,10 @@ const groupSchema = new mongoose.Schema({
         type :Buffer,
         required : false
     },
+    hasImage : {
+        type : Boolean,
+        required : false
+    },
     keywords : [{
         keyword : {
             type: mongoose.Schema.Types.ObjectId,
@@ -66,5 +70,11 @@ groupSchema.pre('remove',async function(next){
     await GroupMembership.deleteMany({group : this._id})
     next()
 })
+groupSchema.methods.toJSON = function (){
+    const group = this.toObject()
+    delete group.image
+
+    return group
+}
 const Group = mongoose.model('Group',groupSchema)
 module.exports = Group

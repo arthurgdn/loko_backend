@@ -147,6 +147,7 @@ router.post('/group/:id/image',auth,upload.single('image'),async (req,res)=>{
     }
     
     group.image = buffer
+    group.hasImage = true
     await group.save()
     res.send()
 },(error,req,res,next)=>{

@@ -35,7 +35,7 @@ router.get('/conversation/:id',auth,async (req,res)=>{
 router.patch('/conversation/:id',auth,async(req,res)=>{
     
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['description','name','image']
+    const allowedUpdates = ['description','name']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
         return res.status(400).send({error : 'Invalid updates'})
@@ -69,6 +69,7 @@ router.post('/conversation',auth,async(req,res)=>{
     const conversation = new Conversation({
         ...req.body,
         admins : [{admin : req.user._id}],
+        hasImage: false
     })
     if(!req.user.validatedEmail){
         return res.status(400).send({error:'User must have a verified email to do this'})
@@ -257,6 +258,7 @@ router.post('/conversation/:id/image',auth,upload.single('image'),async (req,res
     }
     
     conversation.image = buffer
+    conversation.hasImage = true
     await conversation.save()
     res.send(buffer)
 },(error,req,res,next)=>{

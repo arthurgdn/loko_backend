@@ -198,13 +198,16 @@ userSchema.methods.generateResetToken = async function(){
     return token
 }
 
-//Method to check what to do when sending back user
+//On minimise la taille des données à renvoyer
 userSchema.methods.toJSON = function (){
     const user = this
     const userObject = user.toObject()
     delete userObject.password
     delete userObject.tokens
-    //delete userObject.avatar
+    delete userObject.email
+    delete userObject.resetTokens
+    delete userObject.verifTokens
+    delete userObject.avatar
 
     return userObject
 }

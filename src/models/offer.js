@@ -74,6 +74,10 @@ const offerSchema = new mongoose.Schema({
     image : {
         type :Buffer,
         required : false
+    },
+    hasImage : {
+        type : Boolean,
+        required : false
     }
 },{timestamps:true})
 
@@ -94,6 +98,13 @@ offerSchema.pre('remove',async function(next){
     await CollaborationDemand.deleteMany({offer : offer._id})
     next()
 })
+
+offerSchema.methods.toJSON = function (){
+    const offer = this.toObject()
+    delete offer.image
+
+    return offer
+}
 
 const Offer = mongoose.model('Offer',offerSchema)
 module.exports = Offer
