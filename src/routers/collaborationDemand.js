@@ -34,14 +34,14 @@ router.get('/offer/:id/demands',auth,async (req,res)=>{
         }
         res.send(finalDemands)
     }catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
 })
 
 router.post('/offer/:id/demand',auth,async (req,res)=>{
     try {
-    console.log(req.body)
+    
     const offer = await Offer.findById(req.params.id)
     
         if(!offer){
@@ -67,7 +67,7 @@ router.post('/offer/:id/demand',auth,async (req,res)=>{
     await demand.save()
     res.status(201).send(demand)}
     catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
     

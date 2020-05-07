@@ -134,7 +134,7 @@ router.patch('/users/me/password',auth,async (req,res)=>{
         res.status(400).send({error:"L'ancien mot de passe n'est pas valide"})
     }
  }catch(e){
-     console.log(e)
+     
          res.status(400).send(e)
     }
  
@@ -192,7 +192,7 @@ router.get('/users/collab',auth,async(req,res)=>{
             if(!_id){
                 return res.status(404).send
             }
-            console.log(_id)
+            
             formattedCollaborators.push({collaborator:_id,firstName,lastName})
         }
         res.send(formattedCollaborators)
@@ -289,7 +289,7 @@ router.post('/users/me/avatar',auth,upload.single('avatar'),async (req,res)=>{
     await req.user.save()
     res.send()
 },(error,req,res,next)=>{
-    console.log(error.message)
+    
     res.status(400).send({error: error.message})
 })
 //Recuperer la photo d'un utilisateur
@@ -314,7 +314,7 @@ router.get('/users/:id/avatar',async (req,res)=>{
 //API pour réinitialiser le mot de passe
 router.post('/user/reset',async(req,res)=>{
     try{
-        console.log('oui')
+        
         const user = await User.findOne({email:req.body.email})
         if(!user){
             return res.status(404).send()
@@ -354,7 +354,7 @@ router.post('/users/logoutAll',auth,async(req,res)=>{
 router.post('/users/me/delete',auth, async (req,res)=>{
      
     try {
-        console.log(req.body)
+        
         const passwordValidate = await bcrypt.compare(req.body.password,req.user.password)
         
         if(!passwordValidate){
@@ -367,7 +367,7 @@ router.post('/users/me/delete',auth, async (req,res)=>{
         res.send(req.user)
     }
     catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
 })

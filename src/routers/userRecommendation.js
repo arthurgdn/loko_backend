@@ -83,7 +83,7 @@ router.patch('/profile/:profile_id/recommendations/:id',auth, async (req,res)=>{
         }
         
         updates.forEach((update)=>{
-            console.log(req.body[update])
+            
             recommendation[update] = req.body[update]
         })
         

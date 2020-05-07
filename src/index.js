@@ -3,7 +3,7 @@ const bodyParser = require('body-parser')
 const http = require('http')
 const path = require('path')
 const socketio = require('socket.io')
-const hbs = require('hbs')
+const cors = require('cors')
 
 
 const socketioAuth = require('./middleware/socketioAuth')
@@ -16,7 +16,17 @@ require('./db/mongoose')
 //Mise en place du serveur Express et de socket.io
 const app = express()
 const server = http.createServer(app)
-const io = socketio(server)
+const io = socketio(server,{
+    handlePreflightRequest: (req, res) => {
+        const headers = {
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Origin": req.headers.origin, 
+            "Access-Control-Allow-Credentials": true
+        };
+        res.writeHead(200, headers);
+        res.end();
+    }
+})
 
 const publicPath = path.join(__dirname,'../public/')
 const viewsPath = path.join(__dirname,'../templates/views')
@@ -35,6 +45,7 @@ app.use(function(req, res, next) {
     next();
     });
 
+
 //On défini le chemin vers les fichiers statiques
 app.use(express.static(publicPath))
 
@@ -43,6 +54,13 @@ setupRoutes(app)
 
 //On ajoute le middleware d'auth socket.io
 io.use(socketioAuth)
+io.origins((origin, callback) => {
+    
+    if (origin !== 'http://localhost:8080') {
+        return callback('origin not allowed', false);
+    }
+    callback(null, true);
+  })
 const liveMessaging = generateLiveMessage(io)
 io.on('connection',liveMessaging)
 

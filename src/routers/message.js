@@ -3,6 +3,7 @@ const Conversation = require('../models/conversation')
 const {generateLocationMessage,generateMessage} = require('../tools/utils/messages')
 const auth = require('../middleware/auth')
 const Message = require('../models/message')
+const User = require('../models/user')
 const router = new express.Router() 
 
 //API to send back the messages in a conversation
@@ -21,10 +22,18 @@ router.get('/messages/conversation/:id',auth,async(req,res)=>{
             options : {
                 limit : parseInt(req.query.limit),
                 skip : parseInt(req.query.skip),
-                sort:{createdAt: -1}
+                sort:{createdAt: 1}
             }
         }).execPopulate()
-        res.send(conversation.messages)
+        const formattedMessages = []
+        for (message of conversation.messages){
+            const {_id,firstName,lastName} = await User.findById(message.author)
+            if(!_id){
+                return res.status(404).send()
+            }
+            formattedMessages.push({...message._doc,author : {_id,firstName,lastName}})
+        }
+        res.send(formattedMessages)
     }catch(e){
         res.status(400).send(e)
     }
@@ -73,9 +82,10 @@ const generateLiveMessage = (io) =>{
             }catch(e){
                 callback(e)
             }
-            io.to(conv_id).emit('messageUpdated',generateMessage(user.firstName + ' '+user.lastName,message))
+            
             //we add the message to the db
             try {
+                
                 const dbMessage = new Message({
                     conversation : conv_id,
                     author : user._id,
@@ -83,6 +93,7 @@ const generateLiveMessage = (io) =>{
                 })
                 
                 await dbMessage.save()
+                io.to(conv_id).emit('messageReceived',{...dbMessage._doc,author: {_id: user._id,firstName : user.firstName,lastName:user.lastName}})
                 callback()
             }catch(e){
                 

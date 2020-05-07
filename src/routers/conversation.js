@@ -228,7 +228,7 @@ router.get('/conversations/me',auth,async(req,res)=>{
 
         res.send(formattedConversations)
     }catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
 })
@@ -249,7 +249,7 @@ const upload =multer({
 })
 
 router.post('/conversation/:id/image',auth,upload.single('image'),async (req,res)=>{
-    console.log('buffer',req.file.buffer)
+    
     const buffer = await sharp(req.file.buffer).resize({width : 250,height : 250}).png().toBuffer() //client side can resize the image instead of doing it when upload on server side
     const conversation = await Conversation.findById(req.params.id)
     if(!conversation){
@@ -260,7 +260,7 @@ router.post('/conversation/:id/image',auth,upload.single('image'),async (req,res
     await conversation.save()
     res.send(buffer)
 },(error,req,res,next)=>{
-    console.log(error)
+    
     res.status(400).send({error: error.message})
 })
 //Recuperer la photo de la conversation
