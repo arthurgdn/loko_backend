@@ -2,6 +2,7 @@ const express = require('express')
 
 const auth = require('../middleware/auth')
 const Profile = require('../models/profile')
+const User = require('../models/user')
 const UserRecommendation = require('../models/userRecommendation')
 
 const router = new express.Router()
@@ -11,7 +12,7 @@ router.post('/profile/:id/recommendation',auth, async(req, res) => {
     
     
     try {
-        const profile = await Profile.findById(req.params.id)
+        const profile = await Profile.findOne({user : req.params.id})
         
         if(!profile){
             return res.status(404).send()
@@ -30,9 +31,10 @@ router.post('/profile/:id/recommendation',auth, async(req, res) => {
         
         
         await recommendation.save()
-        res.status(201).send(recommendation)
+        res.status(201).send({...recommendation._doc,publisher:{_id:req.user._id,firstName:req.user.firstName,lastName:req.user.lastName}})
     }
     catch(e) {
+        console.log(e)
         res.status(400).send(e)
     }
 })
@@ -41,7 +43,7 @@ router.get('/profile/:id/recommendations',auth,async (req,res)=>{
     
    
     try {
-        const profile = await Profile.findById(req.params.id)
+        const profile = await Profile.findOne({user : req.params.id})
         if(!profile){
             return res.status(404).send()
         }
@@ -53,11 +55,21 @@ router.get('/profile/:id/recommendations',auth,async (req,res)=>{
                 sort:{createdAt: -1}
             }
         }).execPopulate()
-
         
-        res.send(profile.recommendationsReceived)
+        const formattedRecommendations = []
+         for (recommendation of profile.recommendationsReceived){
+             const {_id,firstName,lastName} = await User.findById(recommendation.publisher)
+             if(!_id){
+                 return res.status(404).send()
+             }
+             formattedRecommendations.push({...recommendation._doc,publisher : {_id,firstName,lastName}})
+         }
+         
+        
+        res.send(formattedRecommendations)
     }
     catch(e){
+        
         res.status(500).send(e)
     }
     
@@ -70,7 +82,7 @@ router.get('/profile/:id/recommendations',auth,async (req,res)=>{
 router.patch('/profile/:profile_id/recommendations/:id',auth, async (req,res)=>{
     
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['content','note']
+    const allowedUpdates = ['content']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
         return res.status(400).send({error : 'Invalid updates'})

@@ -15,10 +15,6 @@ const userRecommendationSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim : true
-    },
-    note : {
-        type : Number,
-        required :true
     }
 },{timestamps:true})
 
