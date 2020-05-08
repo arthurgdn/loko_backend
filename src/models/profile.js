@@ -39,7 +39,8 @@ const profileSchema = new mongoose.Schema({
     },
 
 },{
-    timestamps : true
+    timestamps : true,
+    skipVersioning:{completedOffers:true}
 })
 
 profileSchema.virtual('recommendationsReceived',{

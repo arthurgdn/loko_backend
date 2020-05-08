@@ -72,8 +72,18 @@ router.get('/profile/:id',auth,async (req,res)=>{
             keywords.push(newKeyword)
         }
         
+        const formattedCompletedOffers = []
+        for (completedOffer of profile.completedOffers){
+            const offer = await Offer.findById(completedOffer.completedOffer)
+            if(!offer){
+                return res.status(404).send()
+            }
+            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title})
+        }
+        
         res.send({
             ...profile._doc,
+            completedOffers : formattedCompletedOffers,
             firstName,
             lastName,
             location,
@@ -88,21 +98,67 @@ router.get('/profile/:id',auth,async (req,res)=>{
 })
 
 //API to add a completed offer to the profile
-router.post('/profile/completedOffer',auth,async (req,res)=>{
+router.post('/profile/completedOffers',auth,async (req,res)=>{
+    
     try{
+        console.log(req.body.completedOffers)
         const profile = await  Profile.findOne({user: req.user._id})
-        const isAlreadyCompletedOffer =  profile.completedOffers.find((completedOffer)=>String(completedOffer.completedOffer) ===String(req.body._id))
-        const offer = await Offer.findOne({_id:req.body._id})
+        const updatedCompletedOffers = []
+        for (bodyCompletedOffer of req.body.completedOffers){
+            const offer = await Offer.findOne({_id:bodyCompletedOffer._id})
 
-        if(isAlreadyCompletedOffer===undefined  && !!profile && !!offer && offer.completedStatus ==='completed' ){
-           profile.completedOffers.push({completedOffer : req.body._id})
-           
-           await profile.save()
-           res.send({completedOffer : req.body._id})}
-        else {
-            res.status(400).send({error:'Cannot add this completed offer'})
+            if( !!profile && !!offer && offer.completedStatus ==='completed' ){
+                updatedCompletedOffers.push({completedOffer : offer._id})
         }
+        
+        else {
+            
+            return res.status(400).send({error:'Cannot add this completed offer'})
+        }
+    }
+    profile.completedOffers = updatedCompletedOffers
+    await profile.save()
+    
+    const {firstName,lastName,location,locationText} = req.user
+        
+    if(!profile || !firstName || !lastName){
+        
+        return res.status(404).send()
+    }
+    const keywords = []
+    
+    for(keyword of profile.keywords){
+        
+        const newKeyword = await Keyword.findById(keyword.keyword)
+        
+        if(!newKeyword){
+            return res.status(404).send()
+        }
+        keywords.push(newKeyword.name)
+    }
+           
+        const formattedCompletedOffers = []
+        console.log('ok',profile.completedOffers)
+        for (completedOffer of profile.completedOffers){
+            const offer = await Offer.findById(completedOffer.completedOffer)
+            if(!offer){
+                return res.status(404).send()
+            }
+            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title})
+        }
+        
+        res.send({
+            ...profile._doc,
+            completedOffers : formattedCompletedOffers,
+            firstName,
+            lastName,
+            location,
+            locationText,
+            keywords
+        })
+        
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
     
