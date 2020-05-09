@@ -43,10 +43,42 @@ router.patch('/profile',auth,async (req,res)=>{
             }
         }
         await profile.save()
-        res.send(profile)
+        const {firstName,lastName,locationText} = req.user
+        
+        
+        const keywords = []
+        
+        for(keyword of profile.keywords){
+            
+            const newKeyword = await Keyword.findById(keyword.keyword)
+            
+            if(!newKeyword){
+                return res.status(404).send()
+            }
+            keywords.push(newKeyword)
+        }
+        
+        const formattedCompletedOffers = []
+        for (completedOffer of profile.completedOffers){
+            const offer = await Offer.findById(completedOffer.completedOffer)
+            if(!offer){
+                return res.status(404).send()
+            }
+            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title})
+        }
+        
+        res.send({
+            ...profile._doc,
+            completedOffers : formattedCompletedOffers,
+            firstName,
+            lastName,
+            locationText,
+            keywords
+        })
+        
     }
     catch(e){
-        
+        console.log(e)
         res.status(400).send(e)
     }
 })

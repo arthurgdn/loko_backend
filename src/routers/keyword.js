@@ -26,12 +26,12 @@ router.get('/keyword/:id',auth,async(req,res)=>{
         }}).execPopulate()
         const fusionnedItems = fusion_createdAtDesc(keyword.associatedOffers,keyword.associatedGroups)
         const finalItems = []
-        for(item of fusionnedOffers){
+        for(item of fusionnedItems){
             
             const keywords = []
-            for(keyword of item.keywords){
+            for(itemKeyword of item.keywords){
             
-                const newKeyword = await Keyword.findById(keyword.keyword)
+                const newKeyword = await Keyword.findById(itemKeyword.keyword)
         
                 if(!newKeyword){
                     return res.status(404).send()
@@ -51,6 +51,7 @@ router.get('/keyword/:id',auth,async(req,res)=>{
         }
         res.send(finalItems)
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
