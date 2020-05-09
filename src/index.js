@@ -3,7 +3,7 @@ const bodyParser = require('body-parser')
 const http = require('http')
 const path = require('path')
 const socketio = require('socket.io')
-const cors = require('cors')
+const hbs = require('hbs')
 
 
 const socketioAuth = require('./middleware/socketioAuth')
@@ -16,6 +16,8 @@ require('./db/mongoose')
 //Mise en place du serveur Express et de socket.io
 const app = express()
 const server = http.createServer(app)
+
+// Prendre en compte les CORS lors de la connexion avec le frontend
 const io = socketio(server,{
     handlePreflightRequest: (req, res) => {
         const headers = {
@@ -27,7 +29,7 @@ const io = socketio(server,{
         res.end();
     }
 })
-
+//Templates pour le rendu côté serveur
 const publicPath = path.join(__dirname,'../public/')
 const viewsPath = path.join(__dirname,'../templates/views')
 app.set('view engine','hbs')
@@ -38,6 +40,7 @@ const port = process.env.PORT
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json())
+//Middleware permettant de gérer les CORS, à changer pour le passage en prod
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*")
     res.header("Access-Control-Allow-Headers", "*")

@@ -46,7 +46,7 @@ router.post('/users', async (req, res) => {
         await profile.save()
         
         sendVerificationEmail(user.email,user.firstName,verifToken)
-        res.status(201).send({user,token})
+        res.status(201).send({user:user.toJSON(),token})
     }catch(e){
         
         res.status(400).send(e)
@@ -74,7 +74,7 @@ router.get('/users/me',auth,async (req,res)=>{
         }
         
         res.send({
-            ...req.user._doc,
+            ...req.user.toJSON(),
             userGroups,
             userKeywords : profile.keywords
         })
@@ -89,7 +89,7 @@ router.post('/users/login',async (req,res)=>{
     try{
         const user = await User.findByCredentials(req.body.email,req.body.password)
         const token = await user.generateAuthToken()
-        res.send({user,token})
+        res.send({user:user.toJSON(),token})
     }catch(e){
         res.status(400).send()
     }
@@ -107,8 +107,8 @@ router.patch('/users/me',auth,async (req,res)=>{
             req.user[update] = req.body[update]
         })
         await req.user.save()
-        //const user = await User.findByIdAndUpdate(_id,req.body,{new : true,runValidators:true})
-        res.send(req.user)
+        
+        res.send(req.user.toJSON())
     }
     catch(e){
         res.status(400).send(e)

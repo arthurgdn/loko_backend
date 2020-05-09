@@ -1,5 +1,5 @@
-//Compares two strings and sends back true if they are considered to be alike
-//They are considered alike when one sequence of characters matches in both
+//Compare deux chaînes de caractères et renvoie 'true' si une sequence de caractères correspond à celle de l'autre
+
 const textMatch = (searchString,stringToMatch)=>{
     return stringToMatch.toLowerCase().includes(searchString.toLowerCase());
 }

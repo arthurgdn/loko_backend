@@ -1,13 +1,14 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
-//deal with authentication on backend
+
+//Gestion de l'authentification lors de la connexion avec les sockets
+
 const socketioAuth = async (socket,next)=>{
     
     try{
-        
+        //On extrait le token que l'on compare avec celui de la DB
         const header = socket.handshake.headers['authorization']
         const token = header.split(' ')[1]
-        
         const decoded = jwt.verify(token,process.env.JWT_SECRET)
         
         const user = await User.findOne({_id : decoded._id,'tokens.token':token})
@@ -16,7 +17,7 @@ const socketioAuth = async (socket,next)=>{
             
             throw new Error("Impossible de s'identifier")
         }
-        //We send the token and the potential user in the request
+        
         socket.request.token = token
         socket.request.user = user
         
