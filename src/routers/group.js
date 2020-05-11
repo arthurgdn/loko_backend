@@ -11,7 +11,7 @@ const router = new express.Router()
 //API to create a new group the request should have the following body:
 // {name,description,securityStatus = open/onRequest/private,keywords,groupType,location}
 router.post('/group',auth,async (req,res)=>{
-    const group = new Group(req.body)
+    const group = new Group({...req.body,hasImage:false})
     const admin = new GroupMembership({
         user : req.user._id,
         group : group._id,
@@ -38,7 +38,17 @@ router.post('/group',auth,async (req,res)=>{
     }
     await admin.save()
     await group.save()
-    res.status(201).send(group)
+    const keywords = []
+    for(keyword of group.keywords){
+            
+        const newKeyword = await Keyword.findById(keyword.keyword)
+        
+        if(!newKeyword){
+            return res.status(404).send()
+        }
+        keywords.push(newKeyword)
+    }
+    res.status(201).send({...group.toJSON(),keywords})
     }catch(e){
         res.status(400).send(e)
     }
@@ -125,11 +135,11 @@ router.delete('/group/:id',auth,async(req,res)=>{
 
 const upload =multer({
     limits:{
-        fileSize:1000000,
+        fileSize:5000000,
         
     },
     fileFilter(req,file,callback){
-        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+        if (!file.originalname.match(/\.(png|jpg|jpeg|gif|JPEG|JPG|PNG|GIF)$/)){
             return callback(new Error('Veuillez choisir une photo'))
         }
         
@@ -151,6 +161,7 @@ router.post('/group/:id/image',auth,upload.single('image'),async (req,res)=>{
     await group.save()
     res.send()
 },(error,req,res,next)=>{
+    
     res.status(400).send({error: error.message})
 })
 //Recuperer la photo d'un groupe

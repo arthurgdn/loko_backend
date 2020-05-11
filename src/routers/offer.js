@@ -289,6 +289,7 @@ router.get('/offers/collaborated/me',auth,async(req,res)=>{
 //Get all offers in a group
 router.get('/offers/group/:id',auth,async(req,res)=>{
     try{
+        
         const group = await Group.findById(req.params.id)
         if(!group){
             return res.status(404).send()
@@ -325,6 +326,7 @@ router.get('/offers/group/:id',auth,async(req,res)=>{
     res.send(formatedOffers)
 
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
