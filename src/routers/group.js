@@ -48,7 +48,7 @@ router.post('/group',auth,async (req,res)=>{
         }
         keywords.push(newKeyword)
     }
-    res.status(201).send({...group.toJSON(),keywords})
+    res.status(201).send({...group.toJSON(),keywords,membership:'admin'})
     }catch(e){
         res.status(400).send(e)
     }
@@ -61,9 +61,20 @@ router.get('/group/:id',auth,async(req,res)=>{
         if(!group){
             return res.status(404).send()
         }
+        const keywords = []
+        for(keyword of group.keywords){
+            
+            const newKeyword = await Keyword.findById(keyword.keyword)
         
-        res.send(group)
+            if(!newKeyword){
+                return res.status(404).send()
+            }
+            keywords.push(newKeyword)
+        }
+    const membership = await GroupMembership.findOne({group : group._id,user: req.user._id})
+    res.send({...group.toJSON(),keywords,membership:membership?membership.status:'notMember'})
     }catch(e){
+        console.log(e)
         res.status(500).send(e)
     }
 })
@@ -107,8 +118,18 @@ router.patch('/group/:id',auth,async(req,res)=>{
         }
         
         await group.save()
+        const keywords = []
+        for(keyword of group.keywords){
+            
+            const newKeyword = await Keyword.findById(keyword.keyword)
         
-        res.send(group)
+            if(!newKeyword){
+                return res.status(404).send()
+            }
+            keywords.push(newKeyword)
+        }   
+        const membership = await GroupMembership.findOne({group : group._id,user: req.user._id})
+        res.send({...group.toJSON(),keywords,membership:membership?membership.status:'notMember'})
     }
 
     catch(e){

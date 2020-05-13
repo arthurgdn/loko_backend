@@ -2,6 +2,7 @@ const express = require('express')
 const auth = require('../middleware/auth')
 const GroupMembership = require('../models/groupMembership')
 const Group = require('../models/group')
+const User = require('../models/user')
 
 const router=  new express.Router()
 
@@ -35,8 +36,17 @@ router.get('/group/:id/members',auth, async(req,res)=>{
             limit : parseInt(req.query.limit),
             skip : parseInt(req.query.skip)
         }}).execPopulate()
-        res.send(group.members)
+        const formattedMembers = []
+        for (groupMember of group.members){
+            const user = await User.findById(groupMember.user)
+            if(!user){
+                return res.status(404).send()
+            }
+            formattedMembers.push({firstName : user.firstName,lastName : user.lastName,...groupMember._doc})
+        }
+        res.send(formattedMembers)
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
     
@@ -58,7 +68,7 @@ router.post('/group/:id/member',auth,async(req,res)=>{
             const status = group.securityStatus ==='onRequest' ? 'requested' : 'member'
             const membership = new GroupMembership({group : group._id,user:req.user._id,status})
             await membership.save()
-            res.status(201).send(membership)
+            res.status(201).send({firstName: req.user.firstName,lastName:req.user.lastName,...membership._doc})
         }
         else if(group.securityStatus==='private'){
             const admin = await GroupMembership.findOne({group:group._id,user: req.user._id,status: 'admin'})
@@ -71,16 +81,22 @@ router.post('/group/:id/member',auth,async(req,res)=>{
             } 
             const membership = new GroupMembership({group : group._id,user:req.body._id,status : 'member'})
             await membership.save()
-            res.status(201).send(membership)
+            const user = await User.findById(req.body._id)
+            if(!user){
+                return res.status(404).send()
+            }
+            res.status(201).send({firstName: user.firstName,lastName:user.lastName,...membership._doc})
 
         }
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
 //API to have member become admin or to accept a group membership request
 router.patch('/group/:id/member',auth,async(req,res)=>{
     try{
+        console.log(req.body)
         const group = await Group.findById(req.params.id)
         if(!group){
             return res.status(404).send()
@@ -104,7 +120,12 @@ router.patch('/group/:id/member',auth,async(req,res)=>{
             }
             membership.status= 'member'
             await membership.save()
-            res.send(membership)
+            const user = await User.findById(req.body._id)
+            if(!user){
+                return res.status(404).send()
+            }
+            res.send({firstName : user.firstName,lastName : user.lastName,...membership._doc})
+            
         }
         else if(newStatus==='admin'){
             const membership = await GroupMembership.findOne({group:group._id,user:req.body._id,status:'member'})
@@ -113,24 +134,31 @@ router.patch('/group/:id/member',auth,async(req,res)=>{
             }
             membership.status= 'admin'
             await membership.save()
-            res.send(membership)
+            const user = await User.findById(req.body._id)
+            if(!user){
+                return res.status(404).send()
+            }
+            res.send({firstName : user.firstName,lastName : user.lastName,...membership._doc})
         } 
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
 
-router.delete('/group/:id/member',auth,async(req,res)=>{
+router.post('/group/:id/member/delete',auth,async(req,res)=>{
     try{
+        
         const group = await Group.findById(req.params.id)
         if(!group){
+            
             return res.status(404).send()
         }
         //On peut quitter un groupe ou annuler une demande
         if(String(req.body._id)===String(req.user._id)){
             const admins = await GroupMembership.find({group:group._id,status:'admin'})
             //If the user is the last admin then the group is deleted
-            if(admins.length===1 && String(admins.user)===String(req.user._id)){
+            if(admins.length===1 && String(admins.user)===String(req.body._id)){
               await Group.findByIdAndDelete(group._id)
               return res.send()
             }

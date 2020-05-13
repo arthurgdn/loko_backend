@@ -24,6 +24,7 @@ router.get('/keyword/:id',auth,async(req,res)=>{
             skip : parseInt(req.query.skip),
             sort:{createdAt: -1}
         }}).execPopulate()
+        
         const fusionnedItems = fusion_createdAtDesc(keyword.associatedOffers,keyword.associatedGroups)
         const finalItems = []
         for(item of fusionnedItems){
@@ -38,17 +39,19 @@ router.get('/keyword/:id',auth,async(req,res)=>{
                     }
                 keywords.push(newKeyword)
                 }
+           
             if(item.constructor.modelName ==='Offer'){
                 const offerPublisher = await User.findById(item.owner)
-                finalItems.push({...item._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})                 
+                finalItems.push({...item.toJSON(),type:'offer',keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})                 
             }
             else{
-                finalItems.push({...offer._doc,keywords})
+                finalItems.push({...item.toJSON(),keywords,type:'group'})
                                     
             }
             
 
         }
+        
         res.send(finalItems)
     }catch(e){
         console.log(e)

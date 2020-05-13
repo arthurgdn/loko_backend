@@ -73,7 +73,7 @@ groupSchema.pre('remove',async function(next){
 groupSchema.methods.toJSON = function (){
     const group = this.toObject()
     delete group.image
-
+    
     return group
 }
 const Group = mongoose.model('Group',groupSchema)

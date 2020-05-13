@@ -3,6 +3,7 @@ const auth = require('../middleware/auth')
 const Offer = require('../models/offer')
 const User = require('../models/user')
 const OfferComment = require('../models/offerComment')
+const GroupMembership = require('../models/groupMembership')
 const router = new express.Router()
 
 // the :id always refers to the offer's id
@@ -89,6 +90,7 @@ router.get('/offer/:id/comments',auth,async (req,res)=>{
         res.send(formattedComments)
     }
     catch(e){
+        console.log(e)
         res.status(500).send(e)
     }
     
