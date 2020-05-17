@@ -54,6 +54,7 @@ router.get('/feed',auth,async (req,res)=>{
                                     if(offer.location.coordinates.length>0){
                                         const dist = distanceLatLong(offer.location.coordinates[1],offer.location.coordinates[0],req.user.location.coordinates[1],req.user.location.coordinates[0])
                                         offer.points += Math.max(20-Math.floor(dist*2),0)
+                                        offer.distance = dist
                                     }
                                     
                                     feed.push(offer)
@@ -76,6 +77,7 @@ router.get('/feed',auth,async (req,res)=>{
                                         const dist = distanceLatLong(offer.location.coordinates[1],offer.location.coordinates[0],req.user.location.coordinates[1],req.user.location.coordinates[0])
                                         
                                         offer.points += Math.max(20-(dist*2),0)
+                                        offer.distance = dist
                                     }
 
                                     //We format the response

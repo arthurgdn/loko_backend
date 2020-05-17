@@ -91,7 +91,8 @@ router.post('/users/login',async (req,res)=>{
         const token = await user.generateAuthToken()
         res.send({user:user.toJSON(),token})
     }catch(e){
-        res.status(400).send()
+        
+        res.status(400).send(e)
     }
 })
 //API to change user info
