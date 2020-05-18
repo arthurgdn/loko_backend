@@ -39,8 +39,9 @@ router.post('/group',auth,async (req,res)=>{
             }
         }
     }
-    await admin.save()
     await group.save()
+    await admin.save()
+    
     const keywords = []
     for(keyword of group.keywords){
             
@@ -53,6 +54,7 @@ router.post('/group',auth,async (req,res)=>{
     }
     res.status(201).send({...group.toJSON(),keywords,membership:'admin'})
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
 })
