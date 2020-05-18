@@ -9,7 +9,7 @@ const {sendVerificationEmail,sendGoodbyeEmail,sendPasswordResetEmail} = require(
 const Profile = require('../models/profile')
 const User = require('../models/user')
 const Group = require('../models/group')
-
+const GroupMembership = require('../models/groupMembership')
 const findCollaboratorByName = require('../tools/users/findCollaboratorByName')
 
 
@@ -69,7 +69,11 @@ router.get('/users/me',auth,async (req,res)=>{
             if(!foundGroup){
                 return res.status(404).send()
             }
-            userGroups.push(foundGroup)
+            const membership = await GroupMembership.findOne({group:group.group,user:req.user._id})
+            if(membership.status==='member' || membership.status==='admin'){
+                userGroups.push(foundGroup)
+            }
+            
 
         }
         

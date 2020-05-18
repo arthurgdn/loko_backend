@@ -34,7 +34,7 @@ router.get('/feed',auth,async (req,res)=>{
                 }}).execPopulate()
                 //On parcourt chacune des offres associées
                 for(offer of keyword.associatedOffers){
-                    if(String(offer.owner)!==String(req.user._id)){
+                    if(String(offer.owner)!==String(req.user._id) && offer.completedStatus === 'created'){
                         //Si l'offre est destinée à un/des groupe(s) on vérifie que l'user en est membre
                         if(offer.scope==='group'){
                             let isMember= false
@@ -46,41 +46,21 @@ router.get('/feed',auth,async (req,res)=>{
                             }
                             if(isMember){
                                 index = feedOfferIds.indexOf(offer._id)
+                                let points
+                                let distance
                                 if(index>=0){
                                     feed[index].points += 10
                                 }else{
+                                    
                                     const now = new Date()
-                                    offer.points = 10 + Math.max(20 - Math.floor(20*(now - offer.createdAt)/(3*24*3600)),0)
+                                    points = 10 + Math.max(20 - Math.floor(20*(now - offer.createdAt)/(3*24*3600)),0)
                                     if(offer.location.coordinates.length>0){
                                         const dist = distanceLatLong(offer.location.coordinates[1],offer.location.coordinates[0],req.user.location.coordinates[1],req.user.location.coordinates[0])
-                                        offer.points += Math.max(20-Math.floor(dist*2),0)
-                                        offer.distance = dist
+                                        points += Math.max(20-Math.floor(dist*2),0)
+                                        distance = dist
                                     }
                                     
-                                    feed.push(offer)
-                                    feedOfferIds.push(offer._id)
-                                }
-                            }
-                        }else{
-                            index = feedOfferIds.indexOf(String(offer._id))
-                            
-                                if(index>=0){
-                                    
-                                    feed[index].points += 10
-                                    
-                                }else{
-                                    const now = (new Date().getTime())/1000
-                                    const creationDate = (new Date(offer.createdAt).getTime())/1000
-                                    
-                                    offer.points = 10 + Math.max(20 - (20*(now - creationDate)/(3*24*3600)),0)
-                                    if(offer.location.coordinates.length>0){
-                                        const dist = distanceLatLong(offer.location.coordinates[1],offer.location.coordinates[0],req.user.location.coordinates[1],req.user.location.coordinates[0])
-                                        
-                                        offer.points += Math.max(20-(dist*2),0)
-                                        offer.distance = dist
-                                    }
-
-                                    //We format the response
+                                    //On formate les mots clés et l'auteur de l'annonce
                                     const keywords = []
                                     for(offerKeyword of offer.keywords){
             
@@ -93,7 +73,45 @@ router.get('/feed',auth,async (req,res)=>{
                                     }
                                     const offerPublisher = await User.findById(offer.owner)
 
-                                    feed.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                                    feed.push({...offer._doc,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                                    feedOfferIds.push(String(offer._id))
+                                }
+                            }
+                        }else{
+                            index = feedOfferIds.indexOf(String(offer._id))
+                            let points
+                            let distance
+                                if(index>=0){
+                                    
+                                    feed[index].points += 10
+                                    
+                                }else{
+                                    
+                                    const now = (new Date().getTime())/1000
+                                    const creationDate = (new Date(offer.createdAt).getTime())/1000
+                                    
+                                    points = 10 + Math.max(20 - (20*(now - creationDate)/(3*24*3600)),0)
+                                    if(offer.location.coordinates.length>0){
+                                        const dist = distanceLatLong(offer.location.coordinates[1],offer.location.coordinates[0],req.user.location.coordinates[1],req.user.location.coordinates[0])
+                                        
+                                        points += Math.max(20-(dist*2),0)
+                                        distance = dist
+                                    }
+
+                                    //On formate les mots clés et l'auteur de l'annonce
+                                    const keywords = []
+                                    for(offerKeyword of offer.keywords){
+            
+                                    const newKeyword = await Keyword.findById(offerKeyword.keyword)
+        
+                                    if(!newKeyword){
+                                        return res.status(404).send()
+                                    }
+                                    keywords.push(newKeyword)
+                                    }
+                                    const offerPublisher = await User.findById(offer.owner)
+
+                                    feed.push({...offer._doc,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     feedOfferIds.push(String(offer._id))
                                     }
                         }
@@ -103,7 +121,7 @@ router.get('/feed',auth,async (req,res)=>{
                 }
             }
         }
-        
+        console.log(feed)
         res.send(feed.sort((a, b) => a.points < b.points ? 1 : -1 ))
     }catch(e){
         console.log(e)

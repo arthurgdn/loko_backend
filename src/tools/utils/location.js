@@ -12,6 +12,8 @@ const  distanceLatLong = (lat1, lon1, lat2, lon2) => {
   
     return 12742 * Math.asin(Math.sqrt(a)); 
   }
+
+// console.log(distanceLatLong(48.885,2.079,-3.82,48.5775))
 module.exports = {
     distanceLatLong
 }

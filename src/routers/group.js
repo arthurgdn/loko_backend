@@ -5,6 +5,9 @@ const sharp = require('sharp')
 const Group = require('../models/group')
 const GroupMembership = require('../models/groupMembership')
 const Keyword = require('../models/keyword')
+const Profile = require('../models/profile')
+
+const {distanceLatLong} = require('../tools/utils/location')
 
 
 const router = new express.Router()
@@ -74,7 +77,7 @@ router.get('/group/:id',auth,async(req,res)=>{
     const membership = await GroupMembership.findOne({group : group._id,user: req.user._id})
     res.send({...group.toJSON(),keywords,membership:membership?membership.status:'notMember'})
     }catch(e){
-        console.log(e)
+        
         res.status(500).send(e)
     }
 })
@@ -202,6 +205,69 @@ router.get('/group/:id/image',async (req,res)=>{
 
     }catch(e){
         res.status(404).send()
+    }
+})
+
+router.get('/suggestedgroups',auth,async (req,res)=>{
+    try{
+        const suggestions = []
+        //On note les id de chaque offre qu'on a déjà aujouté au fil d'actualité
+        const suggestionsIds=[]
+        const profile = await Profile.findOne({user : req.user._id})
+        //On récupere les annonces avec les mots-clés associés au profil de l'utilisateur
+        if(!!profile.keywords && profile.keywords.length>0){
+            for(keywordObj of profile.keywords){
+                const keyword = await Keyword.findById(keywordObj.keyword)
+                if(!keyword){
+                    return res.status(404).send()
+                }
+                await keyword.populate({
+                path:'associatedGroups',
+                options : {
+                    sort:{createdAt: -1}
+                }}).execPopulate()
+                for(group of keyword.associatedGroups){
+                    const member = await GroupMembership.findOne({group : group._id,user: req.user._id})
+                    
+                    if(!member){
+                        
+                            
+                        index = suggestionsIds.indexOf(String(group._id))
+                        let points
+                        let distance
+                        if(index>=0){
+                                    suggestions[index].points += 10
+                                    
+                                }else{
+                                    points = 0
+                                    
+                                    if(group.location.coordinates.length>0){
+                                        const dist = distanceLatLong(group.location.coordinates[1],group.location.coordinates[0],req.user.location.coordinates[1],req.user.location.coordinates[0])
+                                        points += Math.max(20-Math.floor(dist*2),0)
+                                        distance = dist
+                                    }
+                                    const keywords = []
+                                    for(groupKeyword of group.keywords){
+            
+                                    const newKeyword = await Keyword.findById(groupKeyword.keyword)
+        
+                                    if(!newKeyword){
+                                        return res.status(404).send()
+                                    }
+                                    keywords.push(newKeyword)
+                                    }   
+                                    suggestions.push({...group.toJSON(),points,distance,keywords,membership:'notMember'})
+                                    
+                                    suggestionsIds.push(String(group._id))
+                                    
+                                }
+                            }}}}
+                        
+        
+        res.send(suggestions.sort((a, b) => a.points < b.points ? 1 : -1 ))        
+    }catch(e){
+        console.log(e)
+        res.status(400).send(e)
     }
 })
 module.exports= router

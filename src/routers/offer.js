@@ -59,7 +59,7 @@ router.post('/offer/create',auth, async (req,res)=>{
         await offer.save()
         res.status(201).send(offer)
     }catch(e){
-        
+        console.log(e)
         res.status(400).send(e)
     }
     })

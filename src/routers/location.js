@@ -40,7 +40,7 @@ router.get('/offers/location',auth,async (req,res)=>{
         res.status(400).send(e)
     }
 })
-//API pour récuperer toutes les groupes dans un rayons "radius"
+//API pour récuperer toutes les groupes dans un rayon "radius"
 router.get('/groups/location',auth,async (req,res)=>{
     try{
         const groups = await Group.find()
