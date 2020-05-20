@@ -13,6 +13,7 @@ const feedRouter = require('./routers/feed')
 const keywordRouter = require('./routers/keyword')
 const securityRouter = require('./routers/security')
 const searchRouter = require('./routers/search')
+const showcaseRouter = require('./routers/showcase')
 
 const setupRoutes = (app)=>{
 app.use(userRouter)
@@ -30,6 +31,7 @@ app.use(feedRouter)
 app.use(keywordRouter)
 app.use(securityRouter)
 app.use(searchRouter)
+app.use(showcaseRouter)
 }
 
 module.exports = setupRoutes

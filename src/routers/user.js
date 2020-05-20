@@ -27,6 +27,7 @@ router.post('/sendVerification',auth,async(req,res)=>{
     }
     
 })
+
 //API to signup on the platform
 router.post('/users', async (req, res) => {
     
