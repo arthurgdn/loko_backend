@@ -96,7 +96,7 @@ router.post('/group/:id/member',auth,async(req,res)=>{
 //API to have member become admin or to accept a group membership request
 router.patch('/group/:id/member',auth,async(req,res)=>{
     try{
-        console.log(req.body)
+        
         const group = await Group.findById(req.params.id)
         if(!group){
             return res.status(404).send()

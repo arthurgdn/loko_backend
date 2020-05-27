@@ -13,7 +13,7 @@ const auth = async (req,res,next)=>{
         const user = await User.findOne({_id : decoded._id,'tokens.token':token})
         
         if(!user){
-            throw new Error('Impossible de se connecter')
+            throw new Error('Mauvais identifiants')
         }
         
         req.token = token
@@ -21,8 +21,7 @@ const auth = async (req,res,next)=>{
         
         next()
     }catch(e){
-        
-        res.status(401).send({error:e})
+        res.status(401).send('Mauvais identifiants')
     }
     
 }

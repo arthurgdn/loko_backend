@@ -121,7 +121,6 @@ router.get('/feed',auth,async (req,res)=>{
                 }
             }
         }
-        console.log(feed)
         res.send(feed.sort((a, b) => a.points < b.points ? 1 : -1 ))
     }catch(e){
         console.log(e)

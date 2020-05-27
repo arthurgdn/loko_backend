@@ -64,9 +64,9 @@ router.get('/users/me',auth,async (req,res)=>{
         }
         const userGroups = []
         for(group of req.user.groupsJoined){
-            console.log(group)
+            
             const foundGroup = await Group.findById(group.group)
-            console.log('found',foundGroup)
+            
             if(!foundGroup){
                 return res.status(404).send()
             }
