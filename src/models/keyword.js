@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+//Schéma définissant les mots clés
 const keywordSchema = new mongoose.Schema({
     name : {
         type: String,

@@ -1,6 +1,7 @@
 const User = require('../../models/user')
-const mongoose = require('mongoose')
 const textMatch = require('../utils/textMatch')
+
+//Fonction permettant de rechercher un utilisateur suivi à partir de son nom
 const findCollaboratorByName = async (searchString,user) =>{
     const matchingCollaborators = []
     try {

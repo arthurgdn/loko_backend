@@ -1,4 +1,7 @@
 const mongoose = require('mongoose')
+
+//Schéma de réponse à une annonce
+
 const collaborationDemandSchema = new mongoose.Schema({
     offer:{
         type : mongoose.Schema.Types.ObjectId,
@@ -18,5 +21,7 @@ const collaborationDemandSchema = new mongoose.Schema({
     
     
 },{timestamps:true})
+
 const CollaborationDemand = mongoose.model('CollaborationDemand',collaborationDemandSchema)
+
 module.exports = CollaborationDemand

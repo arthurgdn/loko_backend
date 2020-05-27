@@ -56,6 +56,7 @@ app.use(express.static(publicPath))
 setupRoutes(app)
 
 //On ajoute le middleware d'auth socket.io
+//Gestion des CORS côté socket.io
 io.use(socketioAuth)
 io.origins((origin, callback) => {
     

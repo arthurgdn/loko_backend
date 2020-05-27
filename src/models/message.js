@@ -1,4 +1,7 @@
 const mongoose = require('mongoose')
+
+//Schéma d'un message
+//Il faudra éventuellement réfléchir à la possibilité d'envoyer des images, ou des fichiers, ou plus pertinement : une position
 const messageSchema = new mongoose.Schema({
     conversation : {
         type : mongoose.Schema.Types.ObjectId,
@@ -14,7 +17,7 @@ const messageSchema = new mongoose.Schema({
     content : {
         type : String,
         required : true
-    } //We might check later to be able to send images/files/others
+    } 
 },{timestamps:true})
 
 const Message = mongoose.model('Message',messageSchema)

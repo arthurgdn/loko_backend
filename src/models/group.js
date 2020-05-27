@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
+
 const GroupMembership = require('./groupMembership')
+
+//Schéma définissant les informations relatives à un groupe
 const groupSchema = new mongoose.Schema({
     
     name : {
@@ -66,10 +69,14 @@ groupSchema.virtual('offers',{
     localField : '_id',
     foreignField : 'groups.group'
 })
+
+//On pense à supprimer les membres du groupe lors de la suppression du groupe
 groupSchema.pre('remove',async function(next){
     await GroupMembership.deleteMany({group : this._id})
     next()
 })
+
+//On minimise la taille des réponses aux requêtes
 groupSchema.methods.toJSON = function (){
     const group = this.toObject()
     delete group.image

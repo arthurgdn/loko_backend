@@ -1,5 +1,9 @@
 const mongoose = require('mongoose')
+
 const Message = require('./message')
+
+//Schéma contenant les informations relatives à une conversation
+
 const conversationSchema = new mongoose.Schema({
     members : [{
         member : {
@@ -51,6 +55,7 @@ conversationSchema.methods.toJSON = function (){
     return conversationObject
 }
 
+//On supprime les messages d'une conversation lorsqu'on supprime cette dernière
 conversationSchema.pre('remove', async function(next){
     const conversation = this
     await Message.deleteMany({conversation : conversation._id})

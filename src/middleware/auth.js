@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 
 //Gestion de l'authentification au backend en utilisant les jsonwebtoken
-
+//Middleware appliqué à chaque consommation d'une API protégée par authentification
 const auth = async (req,res,next)=>{
     try{
         
@@ -15,7 +15,7 @@ const auth = async (req,res,next)=>{
         if(!user){
             throw new Error('Mauvais identifiants')
         }
-        
+        //On attache le token et l'utilisateur à la requête 
         req.token = token
         req.user = user
         

@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+
+//Importation des modèles utilisés
 const Offer = require('./offer')
 const OfferComment = require('./offerComment')
 const Message = require('./message')
@@ -9,7 +11,7 @@ const Profile = require('./profile')
 const UserRecommendation = require('./userRecommendation')
 const GroupMembership = require('./groupMembership')
 
-//create userSchema
+//Schéma définissant un utilisateur
 const userSchema = new mongoose.Schema({
     firstName: {
         type : String,
@@ -28,7 +30,7 @@ const userSchema = new mongoose.Schema({
         minlength : 6,
         validate(value){
             if (value.toLowerCase().includes('password')){
-                throw new Error('Do not use password in your password')
+                throw new Error('Ne mettez pas password dans votre mot de passe')
             }
         }
     },
@@ -40,7 +42,7 @@ const userSchema = new mongoose.Schema({
         lowercase : true,
         validate(value){
             if(!validator.isEmail(value)){
-                throw new Error('Email is invalid')
+                throw new Error('Email invalide')
             }
         }
     },
@@ -54,7 +56,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         validate(value){
             if(!validator.isMobilePhone(value)){
-                throw new Error('Phone is invalid')
+                throw new Error('Numéro de téléphone invalide')
             }
         }
     },
@@ -66,10 +68,10 @@ const userSchema = new mongoose.Schema({
         type: Buffer,
         required : false
     },
-    location : {
-        type: {
-            type: String, 
-            enum: ['Point'], 
+    location : {            //Le choix fait ici pour stocker la position est d'utiliser deux champs, un premier sous
+        type: {             // forme de coordonnées latitude/longitude pour procéder aux calculs de distance sur le back
+            type: String,   // un second sous forme de texte faisant référence au lieu pour l'afficher sur le front
+            enum: ['Point'], // sans avoir à faire appel à l'API de mapbox à chaque fois
             required: false
           },
           coordinates: {
@@ -119,7 +121,8 @@ const userSchema = new mongoose.Schema({
     timestamps : true
 })
 
-//We define virtuals to link user with the different activities
+//On définit les différents champs virtuels
+//Certains ne sont pas utilisés, possibilité d'en supprimer certains
 userSchema.virtual('profile',{
     ref:'Profile',
     localField : '_id',
@@ -153,15 +156,13 @@ userSchema.virtual('recommendationsPublished',{
     foreignField : 'publisher'
 })
 
-
-
 userSchema.virtual('groupsJoined',{
     ref:'GroupMembership',
     localField: '_id',
     foreignField : 'user'
 })
 
-//this static is to be used for login
+//Méthode statique utilisée lors de la connexion de l'utilisateur avec ses identifiants
 userSchema.statics.findByCredentials = async (email,password)=>{
     const user = await User.findOne({email})
     if (!user){
@@ -174,7 +175,7 @@ userSchema.statics.findByCredentials = async (email,password)=>{
     return user
 }
 
-//this method is to be used to generate the token when loging in
+//Méthode pour générer un token d'authentification
 userSchema.methods.generateAuthToken = async function (){
     const user = this
     const token = jwt.sign({ _id: user._id.toString()},process.env.JWT_SECRET)
@@ -182,6 +183,7 @@ userSchema.methods.generateAuthToken = async function (){
     await user.save()
     return token
 }
+//Méthode pour générer un token de vérification d'email
 userSchema.methods.generateVerificationToken = async function(){
     const user = this
     const token = jwt.sign({ _id: user._id.toString()},process.env.JWT_SECRET)
@@ -189,7 +191,7 @@ userSchema.methods.generateVerificationToken = async function(){
     await user.save()
     return token
 }
-
+//Méthode pour générer un token de réinitialisation de mot de passe
 userSchema.methods.generateResetToken = async function(){
     const user = this
     const token = jwt.sign({ _id: user._id.toString()},process.env.JWT_SECRET)
@@ -198,7 +200,7 @@ userSchema.methods.generateResetToken = async function(){
     return token
 }
 
-//On minimise la taille des données à renvoyer
+//On minimise la taille des données à renvoyer et on supprime les informations sensibles
 userSchema.methods.toJSON = function (){
     const user = this
     const userObject = user.toObject()
@@ -211,7 +213,7 @@ userSchema.methods.toJSON = function (){
 
     return userObject
 }
-//Hash the plain text password before saving
+//Hash le mot de passe avant la sauvegarde
 userSchema.pre('save', async function (next) {
     const user = this
     if (user.isModified('password')){
@@ -219,9 +221,8 @@ userSchema.pre('save', async function (next) {
     }
     next()
 })
-
+//Supprime les données liées à l'utilisateur
 userSchema.pre('remove',async function(next){
-    //deals with what has to be done when a user deletes account (remove offers,publications ...)
     const user = this
     await Offer.deleteMany({owner:user._id})
     await UserRecommendation.deleteMany({toUser : user._id})
@@ -233,7 +234,6 @@ userSchema.pre('remove',async function(next){
     for (collaborator of user.collaborators){
         const correspondingCollaborator = await User.findById(collaborator.collaborator)
         correspondingCollaborator.collaborators = correspondingCollaborator.collaborators.filter((otherCollaborator)=>{
-            console.log(String(otherCollaborator.collaborator),String(user._id) )
             return String(otherCollaborator.collaborator)!== String(user._id)  
         })
         await correspondingCollaborator.save()

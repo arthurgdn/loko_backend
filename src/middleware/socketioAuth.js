@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 
 //Gestion de l'authentification lors de la connexion avec les sockets
-
+//Middleware appliqué lors de l'utilisation du service de messagerie instantanée
 const socketioAuth = async (socket,next)=>{
     
     try{
@@ -17,7 +17,7 @@ const socketioAuth = async (socket,next)=>{
             
             throw new Error("Impossible de s'identifier")
         }
-        
+        //On attache l'utilisateur et le token au socket
         socket.request.token = token
         socket.request.user = user
         

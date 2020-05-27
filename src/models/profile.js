@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
 
 
-//create userSchema
+//Schéma pour le profil d'un utilisateur
+// l'idée était de pouvoir séparer les API relatives à l'utilisateur et à son profil
+// il serait peut être plus optimal de les regrouper (--> piste d'amélioration)
 const profileSchema = new mongoose.Schema({
     
     description : {
@@ -50,21 +52,6 @@ profileSchema.virtual('recommendationsReceived',{
 })
 
 
-//Method to check what to do when sending back profile
-profileSchema.methods.toJSON = function (){
-    const profile = this
-    const profileObject = profile.toObject()
-    
-    //delete userObject.avatar
-
-    return profileObject
-}
-
-
-profileSchema.pre('remove',async function(next){
-    //deals with what has to be done when a user deletes account (remove offers,publications ...)
-    next()
-})
 
 const Profile = mongoose.model('Profile',profileSchema)
 

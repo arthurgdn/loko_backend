@@ -1,3 +1,4 @@
+//Outil pour générer le format de renvoi des messages lors des discussions instantannées
 const generateMessage = (username,text)=>{
     return {
         username,
@@ -5,6 +6,8 @@ const generateMessage = (username,text)=>{
         createdAt: new Date().getTime()
     }
 }
+
+//On pourra rajouter ensuite une fonctionnalité permettant d'envoyer sa position gps
 const generateLocationMessage = (username,link)=>{
     return {
         username,

@@ -1,9 +1,11 @@
 const sgMail = require('@sendgrid/mail')
-
+//Configuration de SendGrid
 const sendgridAPIkey = process.env.SENDGRID_API_KEY
 sgMail.setApiKey(sendgridAPIkey)
 
-//Différentes fonctions d'envoi d'email lors de la création d'un compte, réinitialisation de mot de passe, suppression d'un compte
+//Différentes fonctions d'envoi d'email lors de la création d'un compte,
+// réinitialisation de mot de passe et suppression d'un compte
+
 const sendGoodbyeEmail = (email,name)=>{
     sgMail.send({
         to : email,
@@ -14,7 +16,10 @@ const sendGoodbyeEmail = (email,name)=>{
 }
 
 const sendVerificationEmail = (email,name,token)=>{
-    //only for dev
+    //On redirige vers le serveur local
+    //On devra mettre en place une variable d'env. ensuite lors du passage en prod
+    //On pourra également rajouter une variable d'env. pour l'email d'envoi lorsqu'il aura été configuré
+
     const link = String(process.env.PORT)+'/verify/'+token
     sgMail.send({
         to : email,
@@ -26,6 +31,7 @@ const sendVerificationEmail = (email,name,token)=>{
 }
 
 const sendPasswordResetEmail = (email,name,token)=>{
+    //Même remarque qu'au dessus, l'URL sera à revoir en prod
     const link = String(process.env.PORT)+'/reset/'+token
     console.log(link)
     sgMail.send({

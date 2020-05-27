@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+//Schéma définissant l'appartenance à un groupe
 const groupMembershipSchema = new mongoose.Schema({
     user : {
         type: mongoose.Schema.Types.ObjectId,

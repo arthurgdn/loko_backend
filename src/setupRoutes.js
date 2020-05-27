@@ -16,6 +16,8 @@ const searchRouter = require('./routers/search')
 const showcaseRouter = require('./routers/showcase')
 const analyticsRouter = require('./routers/analytics')
 
+//Charge et ajoute les différents routers à utiliser par le backend 
+
 const setupRoutes = (app)=>{
 app.use(userRouter)
 app.use(profileRouter)

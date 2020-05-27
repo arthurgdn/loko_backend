@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+//Schéma pour un commentaire sur une annonce
 const offerCommentSchema = new mongoose.Schema({
     publisher : {
         type : mongoose.Schema.Types.ObjectId,
