@@ -6,7 +6,12 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
-    "test":"jest"
+    "test": "env-cmd -f ./config/test.env jest --watch --runInBand --detectOpenHandles"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["./src/tests/setTimeout.js"],
+    "testPathIgnorePatterns": ["./node_modules/"]
   },
   "keywords": [],
   "author": "",
@@ -35,6 +40,7 @@
   "devDependencies": {
     "env-cmd": "^10.1.0",
     "jest": "^26.0.1",
-    "nodemon": "^2.0.3"
+    "nodemon": "^2.0.3",
+    "supertest": "^4.0.2"
   }
 }

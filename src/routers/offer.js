@@ -66,7 +66,6 @@ router.post('/offer/create',auth, async (req,res)=>{
 //API to get an offer 
 router.get('/offer/:id',auth,async (req,res)=>{
     const _id = req.params.id
-    
     try {
         //const task = await Task.findById(_id)
         const offer = await Offer.findOne({_id})
@@ -101,7 +100,6 @@ router.get('/offer/:id',auth,async (req,res)=>{
         res.send({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
     }
     catch(e){
-        
         res.status(400).send(e)
     }
     
