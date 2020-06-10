@@ -51,7 +51,7 @@ const io = socketio(server,{
     }
 })
 
-const port = process.env.PORT
+
 
 //On ajoute le middleware d'auth socket.io
 //Gestion des CORS côté socket.io

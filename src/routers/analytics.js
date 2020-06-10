@@ -9,22 +9,25 @@ const router = new express.Router()
 
 router.post('/admin/analytics',async (req,res)=>{
     try{
+        
         if(req.body.password===process.env.ADMIN_PASS){
-        const data={}
-        data.user_count = (await User.find()).length
-        data.offer_count =(await Offer.find()).length
-        const analytics = await  Analytics.find()
-        data.total_connexions =   analytics.length
-        const dated_connexions = {}
-        for(connexion of analytics){
-            if(dated_connexions[connexion.date]){
-                dated_connexions[connexion.date] += 1
-            }else{
-                dated_connexions[connexion.date] = 1
+            const data={}
+            data.user_count = (await User.find()).length
+            data.offer_count =(await Offer.find()).length
+            
+            const analytics = await  Analytics.find()
+            data.total_connexions =   analytics.length
+            const dated_connexions = {}
+            for(connexion of analytics){
+                if(dated_connexions[connexion.date]){
+                    dated_connexions[connexion.date] += 1
+                }else{
+                    dated_connexions[connexion.date] = 1
+                }
             }
-        }
-        data.dated_connexions = dated_connexions 
-        res.send(data)
+            data.dated_connexions = dated_connexions 
+            
+            res.send(data)
     }
     else{
         res.send('Erreur de connexion')
