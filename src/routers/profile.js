@@ -64,7 +64,8 @@ router.patch('/profile',auth,async (req,res)=>{
             if(!offer){
                 return res.status(404).send()
             }
-            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title})
+            
+            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title,description:offer.description,createdAt:offer.createdAt,completedStatus:offer.completedStatus})
         }
         
         res.send({
@@ -110,7 +111,8 @@ router.get('/profile/:id',auth,async (req,res)=>{
             if(!offer){
                 return res.status(404).send()
             }
-            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title})
+            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title,description:offer.description,createdAt:offer.createdAt,completedStatus:offer.completedStatus})
+        
         }
         
         res.send({
@@ -176,7 +178,8 @@ router.post('/profile/completedOffers',auth,async (req,res)=>{
             if(!offer){
                 return res.status(404).send()
             }
-            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title})
+            formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title,description:offer.description,createdAt:offer.createdAt,completedStatus:offer.completedStatus})
+        
         }
         
         res.send({
