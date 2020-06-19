@@ -20,12 +20,12 @@ router.get('/group/:id/members',auth, async(req,res)=>{
             return res.status(400).send({error : 'You cannot view the members'})
         }
         match = {}
-        status = req.query.status
+        
         
         //We can decide to fetch only certain members
-        if(status){
+        if(req.query.status){
             //You have to be admin to view requested memberships
-            if(status==='requested'){
+            if(req.query.status==='requested'){
                 const admin = await GroupMembership.findOne({group:group._id,user: req.user._id,status: 'admin'})
                 if(!admin){
                     
@@ -35,23 +35,25 @@ router.get('/group/:id/members',auth, async(req,res)=>{
             match.status = req.query.status
             
         }
-        //We populate only accepted members and admins of the group
+        
         await group.populate({path:'members',match,options : {
             limit : parseInt(req.query.limit),
             skip : parseInt(req.query.skip)
         }}).execPopulate()
-        console.log(req.query.status,status,group.members)
+        
         const formattedMembers = []
+        
         for (groupMember of group.members){
             const user = await User.findById(groupMember.user)
             if(!user){
                 return res.status(404).send()
             }
-            formattedMembers.push({firstName : user.firstName,lastName : user.lastName,...groupMember._doc})
+            formattedMembers.push({...groupMember._doc,firstName : user.firstName,lastName : user.lastName})
         }
+        
         res.send(formattedMembers)
     }catch(e){
-        console.log(e)
+        
         res.status(400).send(e)
     }
     
