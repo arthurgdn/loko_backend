@@ -1,12 +1,18 @@
 const express = require('express')
+const moment= require('moment')
+
+const auth = require('../middleware/auth')
+
+
 const User = require('../models/user')
 const Offer = require('../models/offer')
 const Analytics = require('../models/analytics')
-const auth = require('../middleware/auth')
-const moment= require('moment')
 
 const router = new express.Router()
 
+//Cette route permet de récuperer les données d'analyse du flux des utilisateurs 
+//La connexion demande un mot de passe
+//Les infos renvoyées sont : le nombre d'users, d'annonces publiées, le nombre de connexions par jours
 router.post('/admin/analytics',async (req,res)=>{
     try{
         
@@ -38,6 +44,8 @@ router.post('/admin/analytics',async (req,res)=>{
     }
 })
 
+//Cette route est appelée lorsqu'un utilisateur se connecte
+//Une entrée dans la DB comporte uniquement l'id de l'user ainsi que la date de connexion
 router.post('/analytics/connect',auth,async (req,res)=>{
     try{
         const analytic = new Analytics({

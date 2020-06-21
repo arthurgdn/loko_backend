@@ -1,21 +1,22 @@
 const express = require('express')
 const multer = require('multer')
 const sharp = require('sharp')
-const Offer = require('../models/offer')
+
+const auth = require('../middleware/auth')
+
 const User = require('../models/user')
 const Conversation = require('../models/conversation')
-const auth = require('../middleware/auth')
+
 
 const router = new express.Router()
 
-//API to fetch conversation info : members, description,admins, image...
+//Route pour récuperer les informations propres à une conversation
 router.get('/conversation/:id',auth,async (req,res)=>{
     try{
         const conversation =await Conversation.findById(req.params.id)
         if(!conversation){
             return res.status(404).send()
         }
-        //We check if the user is a member of this conversation
         if(!conversation.members.find((member)=>String(member.member)===String(req.user._id))){
             return res.status(400).send({error:'User is not a member of this conversation'})
         }
@@ -31,27 +32,26 @@ router.get('/conversation/:id',auth,async (req,res)=>{
         res.status(400).send(e)
     }
 })
-//API to change conversation info 
+
+//Route pour changer les informations générales d'une conversation
+//Une vérification est effectuée pour déterminer quels éléments sont modifiables
+//Les updates sont directement fournies dans le body
 router.patch('/conversation/:id',auth,async(req,res)=>{
     
     const updates = Object.keys(req.body)
     const allowedUpdates = ['description','name']
     const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
     if (!isValidOperation){
-        return res.status(400).send({error : 'Invalid updates'})
+        return res.status(400).send({error : 'Champs modifés invalides'})
     }
     
     try{
         const conversation = await Conversation.findById(req.params.id)
-        
-        
-        
-        //const task = await Task.findByIdAndUpdate(_id,req.body,{new : true,runValidators:true})
         if(!conversation){
             return res.status(404).send()
         }
         if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))){
-            return res.status(400).send({error:'User has to be admin to do this'})
+            return res.status(400).send({error:"Vous n'avez pas l'authorization requise"})
         }
         updates.forEach((update)=>{
             conversation[update] = req.body[update]
@@ -64,7 +64,9 @@ router.patch('/conversation/:id',auth,async(req,res)=>{
         res.status(400).send(e)
     }
 })
-//API to create a conversation
+
+//Route pour créer une conversation
+//Il est seulement nécessaire d'avoir un email vérifié
 router.post('/conversation',auth,async(req,res)=>{
     const conversation = new Conversation({
         ...req.body,
@@ -89,7 +91,9 @@ router.post('/conversation',auth,async(req,res)=>{
         res.status(400).send(e)
     }
 })
-//API to delete a conversation
+
+//Route pour supprimer une conversation
+//Le client doit être un admin de la conversation
 router.delete('/conversation/:id',auth,async(req,res)=>{
     try{
         const conversation = await Conversation.findById(req.params.id)
@@ -106,8 +110,9 @@ router.delete('/conversation/:id',auth,async(req,res)=>{
         res.status(400).send(e)
     }
 })
-//API to change the status of a member from admin/to admin
-//form of req.body : {_id:member.id,newStatus:'admin'/'unadmin'}
+
+//Route pour promouvoir en admin un membre de la conversation
+//Format du body : {_id:member.id,newStatus:'admin'}
 router.post('/conversation/:id/admin',auth,async(req,res)=>{
     try{
         const conversation = await Conversation.findById(req.params.id)
@@ -116,44 +121,38 @@ router.post('/conversation/:id/admin',auth,async(req,res)=>{
             return res.status(404).send()
         }
         if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))){
-            return res.status(400).send({error:'User has to be admin to do this'})
+            return res.status(400).send({error:"Vous n'avez pas l'authorization requise"})
         }
 
         if(req.body.newStatus==='admin'){
             if(!!conversation.admins.find((admin)=>String(admin.admin)===String(req.body._id))){
-                return res.status(400).send({error:'User is already admin'})
+                return res.status(400).send({error:"L'utilisateur est déjà administrateur"})
             }else if(!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
-                return res.status(400).send({error:'User is not a member of this conversation'})
+                return res.status(400).send({error:"L'utilisateur n'est pas membre de la conversation"})
             }
             conversation.admins.push({admin:req.body._id})
             
 
-        }else if (req.body.newStatus==='unadmin'){
-            if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.body._id))){
-                return res.status(400).send({error:'User is not an admin'})
-            }else if(!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
-                return res.status(400).send({error:'User is not a member of this conversation'})
-            }
-
-            conversation.admins = conversation.admins.filter((admin)=>String(admin.admin)!==String(req.body._id))
-            
         }else{
             return res.status(404).send()
         }
         await conversation.save()
+        //Les membres de la conversation sont formatés pour renvoyer les informations requises par le client
         const formattedMembers = []
-            for (member of conversation.members){
-                const {_id,firstName,lastName} = await User.findById(member.member)
-                if(!_id){
-                    return res.status(404).send()
-                }
-                formattedMembers.push({member:_id,firstName,lastName})}
-            res.send({...conversation._doc,members:formattedMembers})
+        for (member of conversation.members){
+            const {_id,firstName,lastName} = await User.findById(member.member)
+            if(!_id){
+                return res.status(404).send()
+            }
+            formattedMembers.push({member:_id,firstName,lastName})
+        }
+        res.send({...conversation._doc,members:formattedMembers})
     }catch(e){
         res.status(400).send(e)
     }
 })
-//API to add/remove a member
+//Route pour ajouter ou supprimer un nouveau membre
+//Format du body : {action:'add'/'remove'}
 router.post('/conversation/:id/member',auth, async(req,res)=>{
     try{
         const conversation = await Conversation.findById(req.params.id)
@@ -162,22 +161,22 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
             return res.status(404).send()
         }
         if(!conversation.admins.find((admin)=>String(admin.admin)===String(req.user._id))){
-            return res.status(400).send({error:'User has to be admin to do this'})
+            return res.status(400).send({error:"Vous n'avez pas l'authorization requise"})
         }
         if(String(req.user._id)===String(req.body._id)){
-            return res.status(400).send({error:'You cannot edit your own status'})
+            return res.status(400).send({error:"Vous ne pouvez pas effectuer cette action sur vous même"})
         }
 
         if(req.body.action==='add'){
             if(!!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
-                return res.status(400).send({error:'User is already a member'})
+                return res.status(400).send({error:"L'utilisateur est déjà membre de la conversation"})
             }
             conversation.members.push({member:req.body._id})
             
 
         }else if (req.body.action==='remove'){
             if(!conversation.members.find((member)=>String(member.member)===String(req.body._id))){
-                return res.status(400).send({error:'User is not a member'})
+                return res.status(400).send({error:"L'utilisateur n'est pas membre de la conversation"})
             }
             if(conversation.members.length===2){
                 await Conversation.findByIdAndDelete(req.params.id)
@@ -189,6 +188,7 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
             return res.status(404).send()
         }
         await conversation.save()
+        //On formate la conversation pour la renvoyer au client
         const formattedMembers = []
             for (member of conversation.members){
                 const {_id,firstName,lastName} = await User.findById(member.member)
@@ -202,7 +202,7 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
         res.status(400).send(e)
     }
 })
-//API for a user to fetch all his conversations
+//Route pour qu'un utilisateur récupère toutes ses conversations
 router.get('/conversations/me',auth,async(req,res)=>{
     try{
         
@@ -233,7 +233,7 @@ router.get('/conversations/me',auth,async(req,res)=>{
         res.status(400).send(e)
     }
 })
-
+//Gestion de l'upload d'image
 const upload =multer({
     limits:{
         fileSize:5000000,
@@ -249,6 +249,7 @@ const upload =multer({
     }
 })
 
+//Ajouter une image à une conversation
 router.post('/conversation/:id/image',auth,upload.single('image'),async (req,res)=>{
     
     const buffer = await sharp(req.file.buffer).resize({width : 250,height : 250}).png().toBuffer() //client side can resize the image instead of doing it when upload on server side
