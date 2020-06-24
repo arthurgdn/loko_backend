@@ -52,7 +52,7 @@ router.get('/keyword/:id',auth,async(req,res)=>{
 
         }
         
-        res.send(finalItems)
+        res.send({feed: finalItems,name:keyword.name})
     }catch(e){
         console.log(e)
         res.status(400).send(e)
