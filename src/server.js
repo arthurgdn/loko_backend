@@ -43,7 +43,7 @@ const io = socketio(server,{
     handlePreflightRequest: (req, res) => {
         const headers = {
             "Access-Control-Allow-Headers": "Content-Type, Authorization",
-            "Access-Control-Allow-Origin": req.headers.origin, 
+            "Access-Control-Allow-Origin": process.env.FRONTEND_URL, 
             "Access-Control-Allow-Credentials": true
         };
         res.writeHead(200, headers);
@@ -58,7 +58,7 @@ const io = socketio(server,{
 io.use(socketioAuth)
 io.origins((origin, callback) => {
     
-    if (origin !== 'http://localhost:8080') {
+    if (origin !== process.env.FRONTEND_URL) {
         return callback('origin not allowed', false);
     }
     callback(null, true);
@@ -81,7 +81,7 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json())
 //Middleware permettant de gérer les CORS, à changer pour le passage en prod
 app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL)
     res.header("Access-Control-Allow-Headers", "*")
     res.header("Access-Control-Allow-Methods","PUT,GET,POST,DELETE,PATCH")
     next();
