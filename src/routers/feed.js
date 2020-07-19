@@ -34,7 +34,8 @@ router.get('/feed',auth,async (req,res)=>{
                 }}).execPopulate()
                 //On parcourt chacune des offres associées
                 for(offer of keyword.associatedOffers){
-                    if(String(offer.owner)!==String(req.user._id) && offer.completedStatus === 'created'){
+                    const isCollaborator = offer.collaborators.find((collaborator)=>String(collaborator.collaborator)===String(req.user._id))
+                    if(String(offer.owner)!==String(req.user._id) && offer.completedStatus === 'created' && !isCollaborator){
                         //Si l'offre est destinée à un/des groupe(s) on vérifie que l'user en est membre
                         if(offer.scope==='group'){
                             let isMember= false
