@@ -49,15 +49,26 @@ router.post('/offer/create',auth, async (req,res)=>{
     //We check if the user is a member of the groups he publishes in 
     if(offer.scope==='group'){
         for(group of offer.groups){
-        const member = await GroupMembership.findOne({group:group.group,user:req.user._id})
-        if(!member){
-            return res.status(400).send({error:'You are not a member of this group'})
+            const member = await GroupMembership.findOne({group:group.group,user:req.user._id})
+            if(!member){
+                return res.status(400).send({error:'You are not a member of this group'})
+            }
         }
-    }
-}       
+    }       
         
+    const formattedKeywords = []
+    for(keyword of offer.keywords){
+            
+        const newKeyword = await Keyword.findById(keyword.keyword)
+        
+        if(!newKeyword){
+            return res.status(404).send()
+        }
+        formattedKeywords.push(newKeyword)
+    }
         await offer.save()
-        res.status(201).send(offer)
+        res.send({...offer._doc,keywords:formattedKeywords,publisherName : req.user.firstName + ' '+ req.user.lastName, publisherId : req.user._id})
+    
     }catch(e){
         console.log(e)
         res.status(400).send(e)
