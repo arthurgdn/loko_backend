@@ -62,7 +62,7 @@ router.post('/offer/create',auth, async (req,res)=>{
         if(!group){
             return res.status(404).send()
         }
-        formattedGroups.push({group:group._id,groupName:group.name})
+        formattedGroups.push({group:newGroup._id,groupName:newGroup.name})
     }
     const formattedKeywords = []
     for(keyword of offer.keywords){
@@ -235,7 +235,7 @@ router.get('/offers/me',auth,async(req,res)=>{
                 if(!group){
                     return res.status(404).send()
                 }
-                formattedGroups.push({group:group._id,groupName:group.name})
+                formattedGroups.push({group:newGroup._id,groupName:newGroup.name})
             }
             
             const collaborators = []
@@ -298,7 +298,7 @@ router.get('/offers/collaborated/me',auth,async(req,res)=>{
                         return res.status(404).send()
                     }
                     
-                    formattedGroups.push({group:group._id,groupName:newGroup.name})
+                    formattedGroups.push({group:newGroup._id,groupName:newGroup.name})
                 }
                 const collaborators = []
                 for (collaborator of offer.collaborators){
