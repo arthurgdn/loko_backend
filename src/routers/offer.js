@@ -55,7 +55,15 @@ router.post('/offer/create',auth, async (req,res)=>{
             }
         }
     }       
-        
+    const formattedGroups = []
+    for(group of offer.groups){
+        const newGroup = await Group.findById(group.group)
+
+        if(!group){
+            return res.status(404).send()
+        }
+        formattedGroups.push({group:group._id,groupName:group.name})
+    }
     const formattedKeywords = []
     for(keyword of offer.keywords){
             
@@ -67,7 +75,7 @@ router.post('/offer/create',auth, async (req,res)=>{
         formattedKeywords.push(newKeyword)
     }
         await offer.save()
-        res.send({...offer._doc,keywords:formattedKeywords,publisherName : req.user.firstName + ' '+ req.user.lastName, publisherId : req.user._id})
+        res.send({...offer._doc,keywords:formattedKeywords,groups:formattedGroups,publisherName : req.user.firstName + ' '+ req.user.lastName, publisherId : req.user._id})
     
     }catch(e){
         console.log(e)
@@ -221,6 +229,15 @@ router.get('/offers/me',auth,async(req,res)=>{
                     }
                 keywords.push(newKeyword)
                 }
+            const formattedGroups = []
+            for(group of offer.groups){
+                const newGroup = await Group.findById(group.group)        
+                if(!group){
+                    return res.status(404).send()
+                }
+                formattedGroups.push({group:group._id,groupName:group.name})
+            }
+            
             const collaborators = []
             for (collaborator of offer.collaborators){
                 const newCollaborator = await User.findById(collaborator.collaborator)
@@ -232,7 +249,7 @@ router.get('/offers/me',auth,async(req,res)=>{
             }
                 const offerPublisher = await User.findById(offer.owner)
 
-                formatedOffers.push({...offer._doc,collaborators,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                formatedOffers.push({...offer._doc,collaborators,keywords,groups:formattedGroups,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
@@ -273,6 +290,16 @@ router.get('/offers/collaborated/me',auth,async(req,res)=>{
                     }
                 keywords.push(newKeyword)
                 }
+                const formattedGroups = []
+                for(group of offer.groups){
+                    const newGroup = await Group.findById(group.group)
+            
+                    if(!group){
+                        return res.status(404).send()
+                    }
+                    
+                    formattedGroups.push({group:group._id,groupName:newGroup.name})
+                }
                 const collaborators = []
                 for (collaborator of offer.collaborators){
                     const newCollaborator = await User.findById(collaborator.collaborator)
@@ -284,7 +311,7 @@ router.get('/offers/collaborated/me',auth,async(req,res)=>{
                 }
                 const offerPublisher = await User.findById(offer.owner)
 
-                formatedOffers.push({...offer._doc,collaborators,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                formatedOffers.push({...offer._doc,collaborators,groups:formattedGroups,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
