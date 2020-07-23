@@ -4,6 +4,7 @@ const Keyword = require('../models/keyword')
 const User = require('../models/user')
 
 const {fusion_createdAtDesc} = require('../tools/utils/fusion.js')
+const Profile = require('../models/profile')
 
 const router = new express.Router()
 //API to get all groups and offers attached to the specific keyword
@@ -62,16 +63,40 @@ router.get('/keyword/:id',auth,async(req,res)=>{
 //Récupérer tout les mots clés
 router.get('/keywords',auth,async(req,res)=>{
     
-    try{const keywords = await Keyword.find()
-    if(!keywords){
-        return res.send([])
+    try{
+        const keywords = await Keyword.find()
+        if(!keywords){
+            return res.send([])
 
-    }
-    
-    res.send(keywords)
-}catch(e){
+        }
+        
+        res.send(keywords)
+    }catch(e){
         res.status(400).send(e)
     }
 
+})
+
+router.post('/keyword/:id/follow',auth,async (req,res)=>{
+    try{
+        const keyword = await Keyword.findById(req.params.id)
+        if(!keyword){
+            return res.status(404).send()
+        }
+        const profile = await Profile.findOne({user:req.user._id})
+        if(!profile){
+            return res.status(404).send()
+        }
+        console.log(profile.keywords,'keywords')
+        if (profile.keywords.find((keyword)=>String(keyword._id)===req.params.id)){
+            return res.status(400).send("Erreur, vous êtes déjà intéressé par cela")
+        }
+        profile.keywords.push({keyword:req.params.id})
+        await profile.save()
+        res.send(profile.keywords[profile.keywords.length -1])
+    }catch(e){
+        console.log(e)
+        res.status(400).send(e)
+    }
 })
 module.exports = router
