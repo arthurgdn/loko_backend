@@ -87,7 +87,7 @@ router.get('/profile/:id',auth,async (req,res)=>{
     try{
         const profile = await  Profile.findOne({user: req.params.id})
         
-        const {firstName,lastName,location,locationText,profilePicture} = await User.findById(req.params.id)
+        const {firstName,lastName,location,locationText,profilePicture,collaborationDemands} = await User.findById(req.params.id)
         
         if(!profile || !firstName || !lastName){
             
@@ -114,7 +114,7 @@ router.get('/profile/:id',auth,async (req,res)=>{
             formattedCompletedOffers.push({completedOffer : offer._id,title : offer.title,description:offer.description,createdAt:offer.createdAt,completedStatus:offer.completedStatus})
         
         }
-        
+        const demandSent = !!collaborationDemands.find((demand)=>String(demand.demand)===String(req.user._id))
         res.send({
             ...profile._doc,
             completedOffers : formattedCompletedOffers,
@@ -123,7 +123,8 @@ router.get('/profile/:id',auth,async (req,res)=>{
             location,
             locationText,
             profilePicture,
-            keywords
+            keywords,
+            demandSent
         })
     }catch(e){
         
