@@ -2,7 +2,7 @@ const express = require('express')
 const auth = require('../middleware/auth')
 const Keyword = require('../models/keyword')
 const User = require('../models/user')
-
+const CollaborationDemand = require('../models/collaborationDemand')
 const {fusion_createdAtDesc} = require('../tools/utils/fusion.js')
 const Profile = require('../models/profile')
 
@@ -43,7 +43,8 @@ router.get('/keyword/:id',auth,async(req,res)=>{
            
             if(item.constructor.modelName ==='Offer'){
                 const offerPublisher = await User.findById(item.owner)
-                finalItems.push({...item.toJSON(),type:'offer',keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})                 
+                const collaborationDemand = await CollaborationDemand.findOne({offer:item._id,from:req.user._id})
+                finalItems.push({...item.toJSON(),type:'offer',keywords,hasSentDemand: !!collaborationDemand,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})                 
             }
             else{
                 finalItems.push({...item.toJSON(),keywords,type:'group'})

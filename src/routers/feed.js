@@ -3,6 +3,7 @@ const User  = require('../models/user')
 const Profile = require('../models/profile')
 const Keyword = require('../models/keyword')
 const GroupMembership = require('../models/groupMembership')
+const CollaborationDemand = require('../models/collaborationDemand')
 const Offer = require('../models/offer')
 const auth = require('../middleware/auth')
 const {distanceLatLong} = require('../tools/utils/location') 
@@ -73,9 +74,12 @@ router.get('/feed',auth,async (req,res)=>{
                                     keywords.push(newKeyword)
                                     }
                                     const offerPublisher = await User.findById(offer.owner)
-
-                                    feed.push({...offer._doc,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
-                                    feedOfferIds.push(String(offer._id))
+                                    const collaborationDemand = await  CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
+                                    if(!collaborationDemand){
+                                        feed.push({...offer._doc,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
+                                        feedOfferIds.push(String(offer._id))
+                                    }
+                                    
                                 }
                             }
                         }else{
@@ -111,9 +115,12 @@ router.get('/feed',auth,async (req,res)=>{
                                     keywords.push(newKeyword)
                                     }
                                     const offerPublisher = await User.findById(offer.owner)
-
-                                    feed.push({...offer._doc,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
-                                    feedOfferIds.push(String(offer._id))
+                                    const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
+                                    if(!collaborationDemand){
+                                        feed.push({...offer._doc,hasSentDemand:!!collaborationDemand,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                                        feedOfferIds.push(String(offer._id))
+                                    }
+                                    
                                     }
                         }
                         

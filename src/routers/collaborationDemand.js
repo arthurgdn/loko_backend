@@ -72,6 +72,7 @@ router.post('/offer/:id/demand',auth,async (req,res)=>{
         res.status(201).send(demand)
 
     }catch(e){
+        console.log(e)
         res.status(400).send(e)
     }
     

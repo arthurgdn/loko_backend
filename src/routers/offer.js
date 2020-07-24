@@ -8,6 +8,7 @@ const Keyword = require('../models/keyword')
 const auth = require('../middleware/auth')
 const Group = require('../models/group')
 const GroupMembership = require('../models/groupMembership')
+const CollaborationDemand = require('../models/collaborationDemand')
 
 const router = new express.Router()
 
@@ -74,8 +75,9 @@ router.post('/offer/create',auth, async (req,res)=>{
         }
         formattedKeywords.push(newKeyword)
     }
+    
         await offer.save()
-        res.send({...offer._doc,keywords:formattedKeywords,groups:formattedGroups,publisherName : req.user.firstName + ' '+ req.user.lastName, publisherId : req.user._id})
+        res.send({...offer._doc,keywords:formattedKeywords,groups:formattedGroups,hasSentDemand:false,publisherName : req.user.firstName + ' '+ req.user.lastName, publisherId : req.user._id})
     
     }catch(e){
         console.log(e)
@@ -116,7 +118,9 @@ router.get('/offer/:id',auth,async (req,res)=>{
         }
         keywords.push(newKeyword)
     }
-        res.send({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+    const collaborationDemand =await  CollaborationDemand.findOne({from:req.user._id,offer:offer._id})
+    
+        res.send({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName,hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
     }
     catch(e){
         res.status(400).send(e)
@@ -169,7 +173,7 @@ router.patch('/offer/:id',auth, async (req,res)=>{
         
         await offer.save()
         
-        res.send(offer)
+        res.send({...offer._doc,hasSentDemand:false})
     }
 
     catch(e){
@@ -248,8 +252,8 @@ router.get('/offers/me',auth,async(req,res)=>{
                 
             }
                 const offerPublisher = await User.findById(offer.owner)
-
-                formatedOffers.push({...offer._doc,collaborators,keywords,groups:formattedGroups,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
+                formatedOffers.push({...offer._doc,collaborators,keywords,hasSentDemand:!!collaborationDemand,roups,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
@@ -310,8 +314,8 @@ router.get('/offers/collaborated/me',auth,async(req,res)=>{
                     
                 }
                 const offerPublisher = await User.findById(offer.owner)
-
-                formatedOffers.push({...offer._doc,collaborators,groups:formattedGroups,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
+                formatedOffers.push({...offer._doc,collaborators,groups:formattedGroups,keywords,hasSentDemand:!!collaborationDemand,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
@@ -354,8 +358,8 @@ router.get('/offers/group/:id',auth,async(req,res)=>{
             keywords.push(newKeyword)
             }
             const offerPublisher = await User.findById(offer.owner)
-
-            formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+            const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
+            formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName,hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
                                 
     }
     
