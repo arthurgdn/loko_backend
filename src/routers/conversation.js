@@ -57,8 +57,15 @@ router.patch('/conversation/:id',auth,async(req,res)=>{
             conversation[update] = req.body[update]
         })
         await conversation.save()
-        
-        res.send(conversation.toJSON())
+        const formattedMembers = []
+            for (member of conversation.members){
+                const {_id,firstName,lastName} = await User.findById(member.member)
+                if(!_id){
+                    return res.status(404).send()
+                }
+                formattedMembers.push({member:_id,firstName,lastName})
+            }
+        res.send({...conversation.toJSON(),members:formattedMembers})
     }
     catch(e){
         res.status(400).send(e)
