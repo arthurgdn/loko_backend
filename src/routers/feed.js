@@ -76,7 +76,7 @@ router.get('/feed',auth,async (req,res)=>{
                                     const offerPublisher = await User.findById(offer.owner)
                                     const collaborationDemand = await  CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
                                     if(!collaborationDemand){
-                                        feed.push({...offer._doc,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
+                                        feed.push({...offer.toJSON(),keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
                                         feedOfferIds.push(String(offer._id))
                                     }
                                     
@@ -117,7 +117,7 @@ router.get('/feed',auth,async (req,res)=>{
                                     const offerPublisher = await User.findById(offer.owner)
                                     const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
                                     if(!collaborationDemand){
-                                        feed.push({...offer._doc,hasSentDemand:!!collaborationDemand,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                                        feed.push({...offer.toJSON(),hasSentDemand:!!collaborationDemand,keywords,points,distance,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                         feedOfferIds.push(String(offer._id))
                                     }
                                     

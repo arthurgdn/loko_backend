@@ -30,7 +30,7 @@ router.get('/offers/location',auth,async (req,res)=>{
                     }
                 const offerPublisher = await User.findById(offer.owner)
 
-                filteredOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                filteredOffers.push({...offer.toJSON(),keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                 
             }
         }

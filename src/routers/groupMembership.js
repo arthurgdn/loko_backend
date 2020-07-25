@@ -48,7 +48,7 @@ router.get('/group/:id/members',auth, async(req,res)=>{
             if(!user){
                 return res.status(404).send()
             }
-            formattedMembers.push({...groupMember._doc,firstName : user.firstName,lastName : user.lastName})
+            formattedMembers.push({...groupMember.toJSON(),firstName : user.firstName,lastName : user.lastName})
         }
         
         res.send(formattedMembers)
@@ -75,7 +75,7 @@ router.post('/group/:id/member',auth,async(req,res)=>{
             const status = group.securityStatus ==='onRequest' ? 'requested' : 'member'
             const membership = new GroupMembership({group : group._id,user:req.user._id,status})
             await membership.save()
-            res.status(201).send({firstName: req.user.firstName,lastName:req.user.lastName,...membership._doc})
+            res.status(201).send({firstName: req.user.firstName,lastName:req.user.lastName,...membership.toJSON()})
         }
         else if(group.securityStatus==='private'){
             const admin = await GroupMembership.findOne({group:group._id,user: req.user._id,status: 'admin'})
@@ -92,7 +92,7 @@ router.post('/group/:id/member',auth,async(req,res)=>{
             if(!user){
                 return res.status(404).send()
             }
-            res.status(201).send({firstName: user.firstName,lastName:user.lastName,...membership._doc})
+            res.status(201).send({firstName: user.firstName,lastName:user.lastName,...membership.toJSON()})
 
         }
     }catch(e){
@@ -131,7 +131,7 @@ router.patch('/group/:id/member',auth,async(req,res)=>{
             if(!user){
                 return res.status(404).send()
             }
-            res.send({firstName : user.firstName,lastName : user.lastName,...membership._doc})
+            res.send({firstName : user.firstName,lastName : user.lastName,...membership.toJSON()})
             
         }
         else if(newStatus==='admin'){
@@ -145,7 +145,7 @@ router.patch('/group/:id/member',auth,async(req,res)=>{
             if(!user){
                 return res.status(404).send()
             }
-            res.send({firstName : user.firstName,lastName : user.lastName,...membership._doc})
+            res.send({firstName : user.firstName,lastName : user.lastName,...membership.toJSON()})
         } 
     }catch(e){
         console.log(e)

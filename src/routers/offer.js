@@ -77,7 +77,7 @@ router.post('/offer/create',auth, async (req,res)=>{
     }
     
         await offer.save()
-        res.send({...offer._doc,keywords:formattedKeywords,groups:formattedGroups,hasSentDemand:false,publisherName : req.user.firstName + ' '+ req.user.lastName, publisherId : req.user._id})
+        res.send({...offer.toJSON(),keywords:formattedKeywords,groups:formattedGroups,hasSentDemand:false,publisherName : req.user.firstName + ' '+ req.user.lastName, publisherId : req.user._id})
     
     }catch(e){
         console.log(e)
@@ -120,7 +120,7 @@ router.get('/offer/:id',auth,async (req,res)=>{
     }
     const collaborationDemand =await  CollaborationDemand.findOne({from:req.user._id,offer:offer._id})
     
-        res.send({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName,hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
+        res.send({...offer.toJSON(),keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName,hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
     }
     catch(e){
         res.status(400).send(e)
@@ -173,7 +173,7 @@ router.patch('/offer/:id',auth, async (req,res)=>{
         
         await offer.save()
         
-        res.send({...offer._doc,hasSentDemand:false})
+        res.send({...offer.toJSON(),hasSentDemand:false})
     }
 
     catch(e){
@@ -253,7 +253,7 @@ router.get('/offers/me',auth,async(req,res)=>{
             }
                 const offerPublisher = await User.findById(offer.owner)
                 const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
-                formatedOffers.push({...offer._doc,collaborators,keywords,hasSentDemand:!!collaborationDemand,roups,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                formatedOffers.push({...offer.toJSON(),collaborators,keywords,hasSentDemand:!!collaborationDemand,roups,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
@@ -315,7 +315,7 @@ router.get('/offers/collaborated/me',auth,async(req,res)=>{
                 }
                 const offerPublisher = await User.findById(offer.owner)
                 const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
-                formatedOffers.push({...offer._doc,collaborators,groups:formattedGroups,keywords,hasSentDemand:!!collaborationDemand,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
+                formatedOffers.push({...offer.toJSON(),collaborators,groups:formattedGroups,keywords,hasSentDemand:!!collaborationDemand,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName, publisherId : offerPublisher._id})
                                     
         }
         
@@ -359,7 +359,7 @@ router.get('/offers/group/:id',auth,async(req,res)=>{
             }
             const offerPublisher = await User.findById(offer.owner)
             const collaborationDemand = await CollaborationDemand.findOne({offer:offer._id,from:req.user._id})
-            formatedOffers.push({...offer._doc,keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName,hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
+            formatedOffers.push({...offer.toJSON(),keywords,publisherName : offerPublisher.firstName + ' '+ offerPublisher.lastName,hasSentDemand:!!collaborationDemand, publisherId : offerPublisher._id})
                                 
     }
     

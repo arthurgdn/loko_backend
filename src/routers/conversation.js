@@ -27,7 +27,7 @@ router.get('/conversation/:id',auth,async (req,res)=>{
                 return res.status(404).send()
             }
             formattedMembers.push({member:_id,firstName,lastName})}
-        res.send({...conversation._doc,members:formattedMembers})
+        res.send({...conversation.toJSON(),members:formattedMembers})
     }catch(e){
         res.status(400).send(e)
     }
@@ -58,7 +58,7 @@ router.patch('/conversation/:id',auth,async(req,res)=>{
         })
         await conversation.save()
         
-        res.send(conversation)
+        res.send(conversation.toJSON())
     }
     catch(e){
         res.status(400).send(e)
@@ -86,7 +86,7 @@ router.post('/conversation',auth,async(req,res)=>{
                 return res.status(404).send()
             }
             formattedMembers.push({member:_id,firstName,lastName})}
-        res.status(201).send({...conversation._doc,members:formattedMembers})
+        res.status(201).send({...conversation.toJSON(),members:formattedMembers})
     }catch(e){
         res.status(400).send(e)
     }
@@ -146,7 +146,7 @@ router.post('/conversation/:id/admin',auth,async(req,res)=>{
             }
             formattedMembers.push({member:_id,firstName,lastName})
         }
-        res.send({...conversation._doc,members:formattedMembers})
+        res.send({...conversation.toJSON(),members:formattedMembers})
     }catch(e){
         res.status(400).send(e)
     }
@@ -196,7 +196,7 @@ router.post('/conversation/:id/member',auth, async(req,res)=>{
                     return res.status(404).send()
                 }
                 formattedMembers.push({member:_id,firstName,lastName})}
-            res.send({...conversation._doc,members:formattedMembers})
+            res.send({...conversation.toJSON(),members:formattedMembers})
 
     }catch(e){
         res.status(400).send(e)
@@ -224,7 +224,7 @@ router.get('/conversations/me',auth,async(req,res)=>{
                 }
                 formattedMembers.push({member:_id,firstName,lastName})
             }
-            formattedConversations.push({...conversation._doc,members : formattedMembers})
+            formattedConversations.push({...conversation.toJSON(),members : formattedMembers})
         }
 
         res.send(formattedConversations)
