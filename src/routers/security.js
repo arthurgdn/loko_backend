@@ -19,7 +19,7 @@ router.get('/verify/:token',async(req,res)=>{
         user.verifTokens = user.verifTokens.filter((verifToken)=>verifToken.token!==req.params.token)
         await user.save()
         //We will deal with redirection on the frontend
-        res.send()
+        res.render('accountVerified',{link:process.env.FRONTEND_URL,name: user.firstName})
     }catch(e){
         res.status(400).send(e)
     }
