@@ -2,13 +2,22 @@
 <html>
     <head>
         <title>Loko - Compte vérifié</title>
-        
+        <link rel = 'stylesheet' href = '/css/accountVerified.css'/>
     </head>
     <body>
+        <header class="header">
+            
+            <div class="header__content"> 
+                <a class="header__title" href="{{link}}">
+                    <img src='/showcase/cactus_mini' class="header__image"/>
+                    <h1>Loko</h1>
+                </a>
+            </div>
+        </header>
         <div>
             <p>Merci {{name}} votre compte a bien été vérifié</p>
             <a href="{{link}}">Retourner sur Loko</a>
         </div>
-        <script src="/js/passwordReset.js"></script>
+        
     </body>
 </html>
