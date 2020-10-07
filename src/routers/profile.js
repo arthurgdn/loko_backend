@@ -136,7 +136,6 @@ router.get('/profile/:id',auth,async (req,res)=>{
 router.post('/profile/completedOffers',auth,async (req,res)=>{
     
     try{
-        console.log(req.body.completedOffers)
         const profile = await  Profile.findOne({user: req.user._id})
         const updatedCompletedOffers = []
         for (bodyCompletedOffer of req.body.completedOffers){
@@ -173,7 +172,6 @@ router.post('/profile/completedOffers',auth,async (req,res)=>{
     }
            
         const formattedCompletedOffers = []
-        console.log('ok',profile.completedOffers)
         for (completedOffer of profile.completedOffers){
             const offer = await Offer.findById(completedOffer.completedOffer)
             if(!offer){

@@ -40,7 +40,6 @@ router.get('/search/:searchText',auth,async (req,res)=>{
             return (String(user._id)!==String(req.user._id)) && ((user.firstName + ' '+user.lastName).toLowerCase().includes(req.params.searchText.toLowerCase()))
             
         })
-        console.log(searchResults)
         res.send(searchResults)
     }catch(e){
         res.status(400).send(e)
