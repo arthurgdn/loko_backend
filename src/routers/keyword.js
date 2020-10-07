@@ -88,7 +88,7 @@ router.post('/keyword/:id/follow',auth,async (req,res)=>{
         if(!profile){
             return res.status(404).send()
         }
-        console.log(profile.keywords,'keywords')
+        
         if (profile.keywords.find((keyword)=>String(keyword._id)===req.params.id)){
             return res.status(400).send("Erreur, vous êtes déjà intéressé par cela")
         }
