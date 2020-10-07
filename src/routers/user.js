@@ -93,7 +93,6 @@ router.get('/users/me',auth,async (req,res)=>{
 //API to login
 router.post('/users/login',async (req,res)=>{
     try{
-        console.log('logging from app',req.body)
         const user = await User.findByCredentials(req.body.email,req.body.password)
         const token = await user.generateAuthToken()
         res.send({user:user.toJSON(),token})
