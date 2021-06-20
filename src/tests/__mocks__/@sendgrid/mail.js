@@ -1,8 +1,8 @@
 module.exports = {
-    setApiKey(){
+  setApiKey () {
 
-    },
-    send(){
-        
-    }
-}
+  },
+  send () {
+
+  }
+};
