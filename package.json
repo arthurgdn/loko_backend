@@ -6,12 +6,17 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
-    "test": "env-cmd -f ./config/test.env jest --watch --coverage"
+    "test": "env-cmd -f ./config/test.env jest --watch --coverage",
+    "lint": "eslint src/**/*.js src/*.js"
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFilesAfterEnv": ["./src/tests/setTimeout.js"],
-    "testPathIgnorePatterns": ["./node_modules/"]
+    "setupFilesAfterEnv": [
+      "./src/tests/setTimeout.js"
+    ],
+    "testPathIgnorePatterns": [
+      "./node_modules/"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -38,7 +43,10 @@
     "validator": "^13.0.0"
   },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "env-cmd": "^10.1.0",
+    "eslint": "^7.29.0",
+    "eslint-plugin-jest": "^24.3.6",
     "jest": "^26.0.1",
     "nodemon": "^2.0.3",
     "supertest": "^4.0.2"
