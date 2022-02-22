@@ -40,7 +40,7 @@
     "sharp": "^0.25.2",
     "socket.io": "^2.4.0",
     "socketio-auth": "^0.1.1",
-    "validator": "^13.0.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
